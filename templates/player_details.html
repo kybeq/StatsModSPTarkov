@@ -69,7 +69,7 @@ endblock %} {% block content %}
             <th scope="col">Czas</th>
             <th scope="col">Zabójstwa</th>
             <th scope="col">EXP</th>
-            <th scope="col">Data</th>
+
             <th scope="col">Akcje</th>
           </tr>
         </thead>
@@ -81,10 +81,6 @@ endblock %} {% block content %}
             <td>{{ raid.play_time_formatted }}</td>
             <td>{{ raid.kills }}</td>
             <td>{{ raid.exp }}</td>
-            <td>
-              {{ raid.timestamp.strftime('%Y-%m-%d %H:%M:%S') if raid.timestamp
-              else 'Brak daty' }}
-            </td>
             <td>
               <a
                 href="{{ url_for('raid_details', filename=raid.filename) }}"

@@ -1,28 +1,32 @@
 @font-face {
    font-family: 'Bender';
    src: url('/static/fonts/bender/Jovanny Lemonad - Bender.otf') format('opentype');
-   font-weight: normal;
+   font-weight: 400;
+   /* Zmieniono na normal (400) */
    font-style: normal;
 }
 
 @font-face {
    font-family: 'Bender';
    src: url('/static/fonts/bender/Jovanny Lemonad - Bender-Italic.otf') format('opentype');
-   font-weight: normal;
+   font-weight: 400;
+   /* Zmieniono na normal (400) */
    font-style: italic;
 }
 
 @font-face {
    font-family: 'Bender';
    src: url('/static/fonts/bender/Jovanny Lemonad - Bender-Bold.otf') format('opentype');
-   font-weight: bold;
+   font-weight: 700;
+   /* Zmieniono na bold (700) */
    font-style: normal;
 }
 
 @font-face {
    font-family: 'Bender';
    src: url('/static/fonts/bender/Jovanny Lemonad - Bender-BoldItalic.otf') format('opentype');
-   font-weight: bold;
+   font-weight: 700;
+   /* Zmieniono na bold (700) */
    font-style: italic;
 }
 
@@ -30,6 +34,7 @@
    font-family: 'Bender';
    src: url('/static/fonts/bender/Jovanny Lemonad - Bender-Light.otf') format('opentype');
    font-weight: 300;
+   /* Pozostawiono light (300) */
    font-style: normal;
 }
 
@@ -37,6 +42,7 @@
    font-family: 'Bender';
    src: url('/static/fonts/bender/Jovanny Lemonad - Bender-LightItalic.otf') format('opentype');
    font-weight: 300;
+   /* Pozostawiono light (300) */
    font-style: italic;
 }
 
@@ -44,6 +50,7 @@
    font-family: 'Bender';
    src: url('/static/fonts/bender/Jovanny Lemonad - Bender-Black.otf') format('opentype');
    font-weight: 900;
+   /* Pozostawiono black (900) */
    font-style: normal;
 }
 
@@ -51,43 +58,195 @@
    font-family: 'Bender';
    src: url('/static/fonts/bender/Jovanny Lemonad - Bender-BlackItalic.otf') format('opentype');
    font-weight: 900;
+   /* Pozostawiono black (900) */
    font-style: italic;
+}
+
+/* --- Podstawowe Ustawienia --- */
+:root {
+   /* Możesz tu zdefiniować własne zmienne kolorów, jeśli chcesz nadpisać Bootstrap */
+   --bs-body-font-weight: 300;
+   /* Ustawia domyślną wagę na Bender Light */
 }
 
 body {
    font-family: 'Bender', sans-serif;
-   font-size: 18px;
-   font-weight: 600;
+   font-size: 17px;
+   /* Nieco zmniejszono dla lepszego dopasowania */
+   font-weight: var(--bs-body-font-weight);
+   /* Użycie zmiennej */
+   line-height: 1.6;
+   /* Poprawa czytelności */
+   /* Możesz dodać subtelne tło, jeśli chcesz */
+   /* background-color: var(--bs-light); */
+}
+
+[data-bs-theme="dark"] body {
+   /* background-color: var(--bs-dark); */
 }
 
 main {
    padding: 2em;
 }
 
-h1 {
+/* --- Typografia --- */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
    font-family: 'Bender', sans-serif;
+   font-weight: 700;
+   /* Domyślnie pogrubione nagłówki */
+   letter-spacing: 0.5px;
+   /* Dodaje trochę "oddechu" */
+}
+
+h1.display-5 {
+   /* Dopasowanie do nagłówka w HTML */
    font-weight: 900;
+   /* Najcięższa waga dla głównego tytułu */
 }
 
-/* Hero Section */
-.hero-section {
-   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-   border-radius: 0.5rem;
+/* Ustawienie wagi dla tagów strong/b */
+strong,
+b {
+   font-weight: 700;
+   /* Użycie Bender Bold */
 }
 
-[data-bs-theme="dark"] .hero-section {
-   background: linear-gradient(135deg, #343a40 0%, #495057 100%);
+/* Stylizacja list definicji używanych w kartach */
+dl.row.small {
+   font-size: 0.9em;
+   /* Lekko mniejsza czcionka dla list w kartach */
 }
 
-/* Animacje */
+dl.row dt {
+   /* Etykiety (np. "Poziom:", "Mapa:") */
+   font-weight: 400;
+   /* Bender Normal */
+   color: var(--bs-secondary-color);
+   /* Użycie zmiennej Bootstrap dla spójności */
+}
+
+dl.row dd {
+   /* Wartości (np. "50", "Customs") */
+   font-weight: 400;
+   /* Bender Normal lub 600 dla większego kontrastu */
+   color: var(--bs-body-color);
+}
+
+/* Stylizacja tagów code dla ID */
+code {
+   font-family: Consolas, 'Courier New', monospace;
+   /* Lepsza czcionka dla kodu */
+   background-color: var(--bs-tertiary-bg);
+   /* Subtelne tło */
+   padding: 0.2em 0.4em;
+   border-radius: 0.25rem;
+   font-size: 0.85em;
+   border: 1px solid var(--bs-border-color-translucent);
+   /* Subtelna ramka */
+   word-break: break-all;
+   /* Zapobiega "wylewaniu" się długich ID */
+}
+
+/* --- Komponenty Bootstrap - Dostosowanie --- */
+
+/* Karty */
+.card {
+   border: 1px solid var(--bs-border-color-translucent);
+   /* Subtelna ramka dla wszystkich kart */
+   transition: box-shadow 0.3s ease-in-out;
+}
+
+.card:hover {
+   /* Delikatne powiększenie cienia przy najechaniu - opcjonalne */
+   /* box-shadow: var(--bs-box-shadow) !important; */
+}
+
+.card-header {
+   font-weight: 700;
+   /* Bender Bold dla nagłówków kart */
+   letter-spacing: 0.5px;
+   border-bottom: 1px solid var(--bs-border-color-translucent);
+   /* Dostosowanie koloru tekstu dla specyficznych teł, jeśli Bootstrap nie radzi sobie */
+   /* &.bg-info { color: var(--bs-dark); } */
+}
+
+[data-bs-theme="dark"] .card {
+   /* Upewnij się, że tło jest spójne */
+   background-color: var(--bs-gray-800);
+   /* Lub inna zmienna ciemna */
+   border-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] code {
+   background-color: var(--bs-gray-700);
+   border-color: var(--bs-gray-600);
+}
+
+/* Odznaki (Badges) */
+.badge {
+   padding: 0.4em 0.65em;
+   /* Nieco większe odznaki */
+   font-weight: 400;
+   /* Bender Normal dla odznak */
+   font-size: 0.8em;
+}
+
+.badge i {
+   /* Poprawka wyrównania ikon w odznakach */
+   vertical-align: -0.1em;
+}
+
+/* Paski postępu */
+.progress {
+   background-color: var(--bs-secondary-bg);
+   /* Tło paska */
+   border-radius: 0.375rem;
+   /* Dopasowanie do Bootstrap */
+}
+
+.progress-bar {
+   /* Można dodać subtelny gradient lub cień */
+   /* background-image: linear-gradient(rgba(255,255,255,.15), rgba(0,0,0,.15)); */
+}
+
+
+/* --- Specyficzne Sekcje (bazując na HTML) --- */
+
+/* Sekcja Ofiar */
+.list-group-item .badge {
+   /* Mniejsze odznaki w liście ofiar */
+   font-size: 0.75em;
+   padding: 0.3em 0.5em;
+}
+
+/* Sekcja Przedmiotów */
+.row-cols-xl-5 .card .card-header {
+   /* Mniejszy font dla nagłówków w 5 kolumnach */
+   font-size: 0.85rem;
+}
+
+.row-cols-xl-5 .card .list-group-item {
+   /* Mniejszy font dla itemów w 5 kolumnach */
+   font-size: 0.8rem;
+}
+
+
+/* --- Animacje --- */
 .animate-fade-in {
-   animation: fadeIn 0.5s ease-in;
+   animation: fadeIn 0.5s ease-in-out;
+   /* Zmieniono ease na ease-in-out */
 }
 
 @keyframes fadeIn {
    from {
       opacity: 0;
-      transform: translateY(10px);
+      transform: translateY(15px);
+      /* Lekko zwiększono przesunięcie */
    }
 
    to {
@@ -96,49 +255,102 @@ h1 {
    }
 }
 
-/* Karty */
-.card {
-   transition: transform 0.3s ease, box-shadow 0.3s ease;
+/* Dodaj animację do kart przy ładowaniu strony (jeśli chcesz) */
+.card.animate-on-load {
+   opacity: 0;
+   /* Start invisible */
+   animation: fadeIn 0.5s ease-in-out forwards;
+   /* Możesz dodać opóźnienie dla efektu kaskadowego */
+   /* animation-delay: calc(var(--card-index, 0) * 0.05s); */
 }
 
-.card:hover {
-   transform: translateY(-5px);
-   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-}
 
-[data-bs-theme="dark"] .card {
-   background-color: var(--bs-gray-800);
-}
-
-/* Nawigacja */
+/* --- Nawigacja (jeśli używasz w base.html) --- */
 .navbar-nav .nav-link {
-   transition: color 0.3s ease;
+   transition: color 0.2s ease, background-color 0.2s ease;
+   font-weight: 400;
+   /* Bender Normal dla linków */
+   padding-top: 0.8rem;
+   padding-bottom: 0.8rem;
+   border-radius: 0.375rem;
+   margin: 0 0.25rem;
 }
 
-.navbar-nav .nav-link:hover {
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link:focus {
    color: var(--bs-primary);
+   background-color: var(--bs-tertiary-bg);
 }
 
-[data-bs-theme="dark"] .navbar-nav .nav-link.active {
+.navbar-nav .nav-link.active {
+   font-weight: 700;
+   /* Pogrubienie aktywnego linku */
    color: var(--bs-primary);
+   background-color: transparent;
+   /* Usuń tło dla aktywnego, jeśli nie chcesz */
 }
 
-/* Przyciski */
-.btn-primary {
-   transition: background-color 0.3s ease;
+[data-bs-theme="dark"] .navbar-nav .nav-link:hover,
+[data-bs-theme="dark"] .navbar-nav .nav-link:focus {
+   background-color: var(--bs-gray-700);
 }
 
-.btn-primary:hover {
-   background-color: var(--bs-primary-dark);
+
+/* --- Przyciski --- */
+.btn {
+   font-weight: 700;
+   /* Bender Bold dla przycisków */
+   letter-spacing: 0.5px;
+   padding: 0.5rem 1rem;
+   /* Dostosuj padding */
+   transition: all 0.2s ease-in-out;
+   /* Płynniejsze przejścia */
 }
 
-/* Responsywność */
+.btn:hover {
+   transform: translateY(-2px);
+   /* Lekkie uniesienie przycisku */
+   box-shadow: var(--bs-box-shadow-sm);
+}
+
+/* Usunięto .btn-primary:hover bo Bootstrap już to dobrze robi */
+
+
+/* --- Responsywność --- */
 @media (max-width: 768px) {
-   .hero-section {
-      padding: 3rem 1rem;
+   body {
+      font-size: 18px;
+      /* Zmniejszenie fontu na mniejszych ekranach */
    }
 
-   .card {
-      max-width: 100%;
+   main {
+      padding: 1em;
+      /* Mniejszy padding */
    }
+
+   h1.display-5 {
+      font-size: 2.5rem;
+      /* Dostosowanie wielkości głównego nagłówka */
+   }
+
+   /* Możesz dodać więcej reguł dla mniejszych ekranów, np. zmniejszenie odstępów */
+   .row>* {
+      /* Zmniejszenie odstępów (gutters) w rzędach */
+      /* padding-left: calc(var(--bs-gutter-x) * .4); */
+      /* padding-right: calc(var(--bs-gutter-x) * .4); */
+      /* Bootstrap 5.3 może używać g-sm-*, g-md-* itp. */
+   }
+}
+
+/* Hero Section z oryginalnego pliku - pozostawione, jeśli jest używane w base.html */
+.hero-section {
+   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+   border-radius: 0.5rem;
+   padding: 4rem 2rem;
+   /* Dostosowano padding */
+}
+
+[data-bs-theme="dark"] .hero-section {
+   background: linear-gradient(135deg, #343a40 0%, #212529 100%);
+   /* Ciemniejszy gradient */
 }

@@ -1,362 +1,844 @@
 {% extends "base.html" %} {% block title %}Szczegóły rajdu: {{ filename }}{%
 endblock %} {% block content %}
-<div>
-  <h1>Szczegóły rajdu: {{ filename }}</h1>
-</div>
-
-{% if error %}
-<div>
-  <h2>Błąd ładowania rajdu</h2>
-  <div>{{ error }}</div>
-  {# Nawet jeśli jest błąd, spróbuj wyświetlić podstawowe dane, jeśli istnieją
-  #}
-</div>
-{% endif %} {% if data %}
-<div>
-  <!-- Główny kontener danych rajdu -->
-
-  <div>
-    <h2>Podstawowe informacje</h2>
-    <ul>
-      <li>
-        Gracz: {{ data.nickname }} (Poziom: {{ data.level }}, Strona: {{
-        data.side }}, Karma: {{ data.karma_value | default('N/A') }})
-      </li>
-      <li>
-        Całkowite doświadczenie profilu: {{
-        "{:,.0f}".format(data.total_experience) if data.total_experience is not
-        none else 'N/A' }}
-      </li>
-      <li>Wersja gry: {{ data.game_version | default('N/A') }}</li>
-      <li>Głos postaci: {{ data.voice | default('N/A') }}</li>
-      <li>ID Grupy: {{ data.group_id | default('N/A') }}</li>
-      <li>ID Teamu: {{ data.team_id | default('N/A') }}</li>
-      <li>ID Profilu: {{ data.profile_id | default('N/A') }}</li>
-      <li>ID Konta: {{ data.account_id | default('N/A') }}</li>
-      <li>
-        Data rejestracji konta: {{ data.registration_date_formatted |
-        default('N/A') }}
-      </li>
-      <hr />
-      {# Separator dla informacji o rajdzie #}
-      <li>
-        Mapa: {{ data.location }} (ID: {{ data.location_id | default('N/A') }})
-      </li>
-      <li>Wynik rajdu: {{ data.raid_result | default('N/A') }}</li>
-      {% if data.exit_name %}
-      <li>Wyjście: {{ data.exit_name }}</li>
-      {% endif %}
-      <li>Klasa przetrwania: {{ data.survivor_class | default('N/A') }}</li>
-      <li>
-        Czas w rajdzie: {{ data.play_time_formatted }} ({{
-        data.play_time_seconds | default('N/A') }}s)
-      </li>
-      <li>
-        Data rajdu (z pliku): {{ data.timestamp_formatted | default('N/A') }}
-      </li>
-      <li>
-        Data ostatniej sesji (z JSON): {{ data.last_session_date_formatted |
-        default('N/A') }}
-      </li>
-      <li>Server ID: {{ data.server_id | default('N/A') }}</li>
-      <li>
-        Liczba graczy (placeholder): {{ data.player_count_in_raid |
-        default('N/A') }}
-      </li>
-    </ul>
+<div class="container mt-4 mb-5">
+  {# Dodano mb-5 dla odstępu na dole #} {# Nagłówek główny z nazwą pliku
+  (opcjonalnie) #}
+  <div class="text-center mb-4">
+    <h1 class="display-5">Szczegóły Rajdu</h1>
+    <p class="text-muted small">
+      Analiza pliku: <code class="user-select-all">{{ filename }}</code>
+    </p>
   </div>
 
-  {% if data.raid_result == 'Killed' and data.killer_info %}
-  <div>
-    <h2>Informacje o śmierci</h2>
-    <ul>
-      <li>Zabity przez: {{ data.killer_info.name | default('Nieznany') }}</li>
-      <li>
-        Strona zabójcy (Aggressor): {{ data.killer_info.side |
-        default('Nieznana') }}
-      </li>
-      <li>
-        Rola zabójcy (Aggressor): {{ data.killer_info.role_translated |
-        default(data.killer_info.role_raw | default('Nieznana')) }}
-      </li>
-      <li>
-        ID profilu zabójcy (Aggressor): {{ data.killer_info.aggressor_profile_id
-        | default('N/A') }}
-      </li>
-      <li>
-        ID konta zabójcy (Aggressor): {{ data.killer_info.aggressor_account_id |
-        default('N/A') }}
-      </li>
-      <li>
-        ID profilu zabójcy (Results): {{ data.killer_profile_id | default('N/A')
-        }}
-      </li>
-      <li>
-        ID konta zabójcy (Results): {{ data.killer_account_id | default('N/A')
-        }}
-      </li>
-      <hr />
-      {# Separator dla przyczyny śmierci #}
-      <li>
-        Broń zabójcy: {{ data.killer_info.weapon_name |
-        default(data.killer_info.weapon_id | default('Nieznana')) }}
-      </li>
-      <li>
-        Przyczyna śmierci (typ): {{
-        data.killer_info.death_cause_damage_type_translated |
-        default(data.killer_info.death_cause_damage_type_raw |
-        default('Nieznany')) }}
-      </li>
-      <li>
-        Strona (DeathCause): {{ data.killer_info.death_cause_side |
-        default('N/A') }}
-      </li>
-      <li>
-        Rola (DeathCause): {{ data.killer_info.death_cause_role_translated |
-        default(data.killer_info.death_cause_role_raw | default('N/A')) }}
-      </li>
-      <hr />
-      {# Separator dla obrażeń śmiertelnych #}
-      <li>
-        Śmiertelne trafienie w: {{ data.killer_info.killed_by_part_translated |
-        default(data.killer_info.killed_by_part_raw | default('Nieznana')) }}
-      </li>
-      {% if data.killer_info.lethal_damage_amount is not none %}
-      <li>Obrażenia śmiertelne: {{ data.killer_info.lethal_damage_amount }}</li>
-      <li>
-        Typ obrażeń śmiertelnych: {{
-        data.killer_info.lethal_damage_type_translated |
-        default(data.killer_info.lethal_damage_type_raw | default('Nieznany'))
-        }}
-      </li>
-      <li>
-        Źródło obrażeń (np. pocisk): {{
-        data.killer_info.lethal_damage_source_name |
-        default(data.killer_info.lethal_damage_source_id | default('N/A')) }}
-      </li>
-      <li>
-        Obrażenia obuchowe (Blunt): {{ 'Tak' if
-        data.killer_info.lethal_damage_blunt else 'Nie' }}
-      </li>
-      <li>
-        Liczba impaktów: {{ data.killer_info.lethal_damage_impacts |
-        default('N/A') }}
-      </li>
-      {% endif %}
-    </ul>
+  {# Komunikat o błędzie #} {% if error %}
+  <div class="alert alert-danger d-flex align-items-center" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    <div>
+      <h4 class="alert-heading h5">Błąd ładowania rajdu!</h4>
+      {{ error }}
+    </div>
   </div>
-  {% endif %}
+  {% endif %} {# Główna zawartość, jeśli są dane #} {% if data %}
+  <div class="row g-4">
+    {# g-4 dodaje odstępy (gutters) między kolumnami i wierszami #} {# === LEWA
+    KOLUMNA === #}
+    <div class="col-lg-6 d-flex flex-column">
+      <!-- Karta: Informacje o Graczu -->
+      <div class="card shadow-sm mb-4 flex-grow-1">
+        {# flex-grow-1 dla równej wysokości w kolumnie #}
+        <div class="card-header bg-dark text-white">
+          <h3 class="h6 mb-0">
+            <i class="bi bi-person-badge me-2"></i>Gracz: {{ data.nickname }}
+          </h3>
+        </div>
+        <div class="card-body p-3">
+          <dl class="row mb-0 small gy-2">
+            <dt class="col-sm-4 text-muted">Poziom:</dt>
+            <dd class="col-sm-8">{{ data.level }}</dd>
 
-  <div>
-    <h2>Statystyki Sesji</h2>
-    <ul>
-      <li>
-        Doświadczenie (Suma): {{ data.total_session_exp_calculated }} (Z JSON:
-        {{ data.total_session_exp_from_json | default(0) }})
-      </li>
-      <li>Mnożnik EXP sesji: {{ data.session_exp_mult | default(1) }}x</li>
-      <li>
-        Mnożnik bonusu EXP: {{ data.experience_bonus_mult | default(1) }}x
-      </li>
-      <hr />
-      <li>EXP za zabójstwa: {{ data.session_stats.exp_kill | default(0) }}</li>
-      <li>
-        EXP za przeszukiwanie: {{ data.session_stats.exp_looting | default(0) }}
-      </li>
-      <li>
-        EXP za status wyjścia: {{ data.session_stats.exp_exit_status |
-        default(0) }}
-      </li>
-      <hr />
-      <li>
-        Zadane obrażenia: {{ data.session_stats.damage_dealt | default(0) }}
-      </li>
-      <li>
-        Otrzymane obrażenia (Suma): {{ data.session_stats.damage_received_total
-        | default(0) }}
-      </li>
-      {% if data.session_stats.damage_received_details %}
-      <li>
-        <div>Otrzymane obrażenia (Szczegóły):</div>
-        <ul>
-          {% for part, dmg in data.session_stats.damage_received_details.items()
-          %}
-          <li>{{ part }}: {{ dmg }}</li>
+            <dt class="col-sm-4 text-muted">Strona:</dt>
+            <dd class="col-sm-8">{{ data.side }}</dd>
+
+            <dt class="col-sm-4 text-muted">Karma:</dt>
+            <dd class="col-sm-8">{{ data.karma_value | default('N/A') }}</dd>
+
+            <dt class="col-sm-4 text-muted">EXP Profilu:</dt>
+            <dd class="col-sm-8">
+              {{ "{:,.0f}".format(data.total_experience) if
+              data.total_experience is not none else 'N/A' }}
+            </dd>
+
+            <dt class="col-sm-4 text-muted">Głos:</dt>
+            <dd class="col-sm-8">{{ data.voice | default('N/A') }}</dd>
+
+            <dt class="col-sm-4 text-muted">Wersja Gry:</dt>
+            <dd class="col-sm-8">{{ data.game_version | default('N/A') }}</dd>
+
+            <dt class="col-sm-4 text-muted">Rejestracja:</dt>
+            <dd class="col-sm-8">
+              <i class="bi bi-calendar-plus me-1"></i>{{
+              data.registration_date_formatted | default('N/A') }}
+            </dd>
+          </dl>
+        </div>
+      </div>
+      <!-- Koniec Karta: Informacje o Graczu -->
+
+      <!-- Karta: Informacje o Rajdzie -->
+      <div class="card shadow-sm mb-4 flex-grow-1">
+        <div
+          class="card-header bg-primary text-white d-flex justify-content-between align-items-center"
+        >
+          <h3 class="h6 mb-0">
+            <i class="bi bi-map me-2"></i>Rajd na: {{ data.location }}
+          </h3>
+          <span
+            class="badge {% if data.raid_result == 'Survived' %}bg-success{% elif data.raid_result == 'Killed' %}bg-danger{% else %}bg-secondary{% endif %} ms-2"
+          >
+            <i
+              class="bi {% if data.raid_result == 'Survived' %}bi-check-circle{% elif data.raid_result == 'Killed' %}bi-skull{% else %}bi-question-circle{% endif %} me-1"
+            ></i>
+            {{ data.raid_result | default('N/A') }}
+          </span>
+        </div>
+        <div class="card-body p-3">
+          <dl class="row mb-0 small gy-2">
+            {% if data.exit_name %}
+            <dt class="col-sm-4 text-muted">Wyjście:</dt>
+            <dd class="col-sm-8">
+              <i class="bi bi-door-open me-1"></i>{{ data.exit_name }}
+            </dd>
+            {% endif %}
+
+            <dt class="col-sm-4 text-muted">Klasa:</dt>
+            <dd class="col-sm-8">{{ data.survivor_class | default('N/A') }}</dd>
+
+            <dt class="col-sm-4 text-muted">Czas:</dt>
+            <dd class="col-sm-8">
+              <i class="bi bi-clock me-1"></i>{{ data.play_time_formatted }}
+              <span class="text-muted"
+                >({{ data.play_time_seconds | default('?') }}s)</span
+              >
+            </dd>
+
+            <dt class="col-sm-4 text-muted">Data (plik):</dt>
+            <dd class="col-sm-8">
+              <i class="bi bi-calendar-event me-1"></i>{{
+              data.timestamp_formatted | default('N/A') }}
+            </dd>
+
+            <dt class="col-sm-4 text-muted">Data (sesja):</dt>
+            <dd class="col-sm-8">
+              <i class="bi bi-calendar-check me-1"></i>{{
+              data.last_session_date_formatted | default('N/A') }}
+            </dd>
+
+            <dt class="col-sm-4 text-muted">Graczy:</dt>
+            <dd class="col-sm-8">
+              <i class="bi bi-people me-1"></i>{{ data.player_count_in_raid |
+              default('?') }}
+            </dd>
+          </dl>
+        </div>
+      </div>
+      <!-- Koniec Karta: Informacje o Rajdzie -->
+
+      <!-- Karta: Identyfikatory -->
+      <div class="card shadow-sm mb-4 flex-grow-1">
+        <div class="card-header">
+          <h3 class="h6 mb-0">
+            <i class="bi bi-fingerprint me-2"></i>Identyfikatory
+          </h3>
+        </div>
+        <div class="card-body p-3">
+          <dl class="row mb-0 small gy-2">
+            <dt class="col-sm-4 text-muted">ID Profilu:</dt>
+            <dd class="col-sm-8">
+              <code class="user-select-all"
+                >{{ data.profile_id | default('N/A') }}</code
+              >
+            </dd>
+
+            <dt class="col-sm-4 text-muted">ID Konta:</dt>
+            <dd class="col-sm-8">
+              <code class="user-select-all"
+                >{{ data.account_id | default('N/A') }}</code
+              >
+            </dd>
+
+            <dt class="col-sm-4 text-muted">ID Grupy:</dt>
+            <dd class="col-sm-8">
+              <code class="user-select-all"
+                >{{ data.group_id | default('N/A') }}</code
+              >
+            </dd>
+
+            <dt class="col-sm-4 text-muted">ID Teamu:</dt>
+            <dd class="col-sm-8">
+              <code class="user-select-all"
+                >{{ data.team_id | default('N/A') }}</code
+              >
+            </dd>
+
+            <dt class="col-sm-4 text-muted">ID Serwera:</dt>
+            <dd class="col-sm-8">
+              <code class="user-select-all"
+                >{{ data.server_id | default('N/A') }}</code
+              >
+            </dd>
+            <dt class="col-sm-4 text-muted">ID Mapy:</dt>
+            <dd class="col-sm-8">
+              <code>{{ data.location_id | default('N/A') }}</code>
+            </dd>
+          </dl>
+        </div>
+      </div>
+      <!-- Koniec Karta: Identyfikatory -->
+
+      {# Karty związane ze śmiercią - tylko jeśli gracz zginął #} {% if
+      data.raid_result == 'Killed' and data.killer_info %}
+      <!-- Karta: Informacje o Zabójcy -->
+      <div class="card shadow-sm border-danger mb-4 flex-grow-1">
+        <div class="card-header bg-danger text-white">
+          <h3 class="h6 mb-0">
+            <i class="bi bi-person-x-fill me-2"></i>Zabójca
+          </h3>
+        </div>
+        <div class="card-body p-3">
+          <h4 class="h6 small text-muted mb-2">Dane Główne (Aggressor)</h4>
+          <dl class="row mb-3 small gy-2">
+            <dt class="col-sm-4 text-muted">Nazwa:</dt>
+            <dd class="col-sm-8">
+              <strong>{{ data.killer_info.name | default('Nieznany') }}</strong>
+            </dd>
+
+            <dt class="col-sm-4 text-muted">Strona:</dt>
+            <dd class="col-sm-8">{{ data.killer_info.side | default('?') }}</dd>
+
+            <dt class="col-sm-4 text-muted">Rola:</dt>
+            <dd class="col-sm-8">
+              {{ data.killer_info.role_translated |
+              default(data.killer_info.role_raw | default('?')) }}
+            </dd>
+
+            <dt class="col-sm-4 text-muted">ID Profilu:</dt>
+            <dd class="col-sm-8">
+              <code class="user-select-all"
+                >{{ data.killer_info.aggressor_profile_id | default('N/A')
+                }}</code
+              >
+            </dd>
+
+            <dt class="col-sm-4 text-muted">ID Konta:</dt>
+            <dd class="col-sm-8">
+              <code class="user-select-all"
+                >{{ data.killer_info.aggressor_account_id | default('N/A')
+                }}</code
+              >
+            </dd>
+          </dl>
+
+          <h4 class="h6 small text-muted mb-2 border-top pt-2">
+            Dane Dodatkowe (Results)
+          </h4>
+          <dl class="row mb-0 small gy-2">
+            <dt class="col-sm-4 text-muted">ID Profilu:</dt>
+            <dd class="col-sm-8">
+              <code class="user-select-all"
+                >{{ data.killer_profile_id | default('(brak)') }}</code
+              >
+            </dd>
+
+            <dt class="col-sm-4 text-muted">ID Konta:</dt>
+            <dd class="col-sm-8">
+              <code class="user-select-all"
+                >{{ data.killer_account_id | default('(brak)') }}</code
+              >
+            </dd>
+          </dl>
+        </div>
+      </div>
+      <!-- Koniec Karta: Informacje o Zabójcy -->
+
+      <!-- Karta: Przyczyna Śmierci -->
+      <div class="card shadow-sm border-danger mb-4 flex-grow-1">
+        <div class="card-header bg-danger bg-opacity-75 text-white">
+          <h3 class="h6 mb-0">
+            <i class="bi bi-crosshair me-2"></i>Przyczyna Śmierci
+          </h3>
+        </div>
+        <div class="card-body p-3">
+          <dl class="row mb-0 small gy-2">
+            <dt class="col-sm-4 text-muted">Broń:</dt>
+            <dd class="col-sm-8">
+              <strong
+                >{{ data.killer_info.weapon_name |
+                default(data.killer_info.weapon_id | default('Nieznana'))
+                }}</strong
+              >
+            </dd>
+
+            <dt class="col-sm-4 text-muted">Typ Obr.:</dt>
+            <dd class="col-sm-8">
+              {{ data.killer_info.death_cause_damage_type_translated |
+              default(data.killer_info.death_cause_damage_type_raw |
+              default('?')) }}
+            </dd>
+
+            <dt class="col-sm-4 text-muted">Strona (Cause):</dt>
+            <dd class="col-sm-8">
+              {{ data.killer_info.death_cause_side | default('?') }}
+            </dd>
+
+            <dt class="col-sm-4 text-muted">Rola (Cause):</dt>
+            <dd class="col-sm-8">
+              {{ data.killer_info.death_cause_role_translated |
+              default(data.killer_info.death_cause_role_raw | default('?')) }}
+            </dd>
+          </dl>
+        </div>
+      </div>
+      <!-- Koniec Karta: Przyczyna Śmierci -->
+
+      <!-- Karta: Śmiertelne Obrażenia -->
+      <div class="card shadow-sm border-danger mb-4 flex-grow-1">
+        <div class="card-header bg-danger bg-opacity-50 text-white">
+          <h3 class="h6 mb-0">
+            <i class="bi bi-bandaid me-2"></i>Śmiertelne Obrażenia
+          </h3>
+        </div>
+        <div class="card-body p-3">
+          <dl class="row mb-0 small gy-2">
+            <dt class="col-sm-4 text-muted">Trafiona część:</dt>
+            <dd class="col-sm-8">
+              <strong
+                >{{ data.killer_info.killed_by_part_translated |
+                default(data.killer_info.killed_by_part_raw | default('?'))
+                }}</strong
+              >
+            </dd>
+
+            {% if data.killer_info.lethal_damage_amount is not none %}
+            <dt class="col-sm-4 text-muted">Ilość Obr.:</dt>
+            <dd class="col-sm-8">
+              {{ data.killer_info.lethal_damage_amount }}
+            </dd>
+
+            <dt class="col-sm-4 text-muted">Typ Obr.:</dt>
+            <dd class="col-sm-8">
+              {{ data.killer_info.lethal_damage_type_translated |
+              default(data.killer_info.lethal_damage_type_raw | default('?')) }}
+            </dd>
+
+            <dt class="col-sm-4 text-muted">Źródło Obr.:</dt>
+            <dd class="col-sm-8">
+              {{ data.killer_info.lethal_damage_source_name |
+              default(data.killer_info.lethal_damage_source_id | default('?'))
+              }}
+            </dd>
+
+            <dt class="col-sm-4 text-muted">Obuchowe:</dt>
+            <dd class="col-sm-8">
+              {{ 'Tak' if data.killer_info.lethal_damage_blunt else 'Nie' }}
+            </dd>
+
+            <dt class="col-sm-4 text-muted">Impakty:</dt>
+            <dd class="col-sm-8">
+              {{ data.killer_info.lethal_damage_impacts | default('?') }}
+            </dd>
+            {% else %}
+            <dt class="col-sm-12 text-muted fst-italic">
+              Brak szczegółowych danych o śmiertelnych obrażeniach.
+            </dt>
+            {% endif %}
+          </dl>
+        </div>
+      </div>
+      <!-- Koniec Karta: Śmiertelne Obrażenia -->
+      {% endif %} {# Koniec warunku if data.raid_result == 'Killed' #}
+    </div>
+    {# === KONIEC LEWEJ KOLUMNY === #} {# === PRAWA KOLUMNA === #}
+    <div class="col-lg-6 d-flex flex-column">
+      <!-- Karta: Statystyki Sesji -->
+      <div class="card shadow-sm mb-4 flex-grow-1">
+        <div class="card-header bg-info text-dark">
+          <h3 class="h6 mb-0">
+            <i class="bi bi-graph-up me-2"></i>Statystyki Sesji
+          </h3>
+        </div>
+        <div class="card-body p-3">
+          <h4 class="h6 small text-muted mb-2">
+            <i class="bi bi-award me-1"></i>Doświadczenie
+          </h4>
+          <dl class="row mb-3 small gy-2">
+            <dt class="col-sm-4 text-muted">Suma (Obliczone):</dt>
+            <dd class="col-sm-8">
+              <strong>{{ data.total_session_exp_calculated }}</strong>
+            </dd>
+
+            <dt class="col-sm-4 text-muted">Suma (JSON):</dt>
+            <dd class="col-sm-8">
+              {{ data.total_session_exp_from_json | default(0) }}
+            </dd>
+
+            <dt class="col-sm-4 text-muted">Mnożnik Sesji:</dt>
+            <dd class="col-sm-8">{{ data.session_exp_mult | default(1) }}x</dd>
+
+            <dt class="col-sm-4 text-muted">Mnożnik Bonusu:</dt>
+            <dd class="col-sm-8">
+              {{ data.experience_bonus_mult | default(1) }}x
+            </dd>
+
+            <dt class="col-sm-4 text-muted">Za Zabójstwa:</dt>
+            <dd class="col-sm-8">
+              {{ data.session_stats.exp_kill | default(0) }}
+            </dd>
+
+            <dt class="col-sm-4 text-muted">Za Przeszukiwanie:</dt>
+            <dd class="col-sm-8">
+              {{ data.session_stats.exp_looting | default(0) }}
+            </dd>
+
+            <dt class="col-sm-4 text-muted">Za Status Wyjścia:</dt>
+            <dd class="col-sm-8">
+              {{ data.session_stats.exp_exit_status | default(0) }}
+            </dd>
+          </dl>
+
+          <h4 class="h6 small text-muted mb-2 border-top pt-2">
+            <i class="bi bi-heart-pulse me-1"></i>Walka i Ruch
+          </h4>
+          <dl class="row mb-0 small gy-2">
+            <dt class="col-sm-4 text-muted">Zadane Obrażenia:</dt>
+            <dd class="col-sm-8">
+              {{ data.session_stats.damage_dealt | default(0) }}
+            </dd>
+
+            <dt class="col-sm-4 text-muted">Otrzymane Obrażenia:</dt>
+            <dd class="col-sm-8">
+              {{ data.session_stats.damage_received_total | default(0) }} {% if
+              data.session_stats.damage_received_details %}
+              <ul class="list-inline small mb-0 mt-1">
+                {% for part, dmg in
+                data.session_stats.damage_received_details.items() %}
+                <li class="list-inline-item">
+                  <span class="badge bg-danger bg-opacity-25 text-dark"
+                    >{{ part }}: {{ dmg }}</span
+                  >
+                </li>
+                {% endfor %}
+              </ul>
+              {% endif %}
+            </dd>
+
+            <dt class="col-sm-4 text-muted">Zniszczone Części:</dt>
+            <dd class="col-sm-8">
+              {{ data.session_stats.body_parts_destroyed | default(0) }}
+            </dd>
+
+            <dt class="col-sm-4 text-muted">Dystans:</dt>
+            <dd class="col-sm-8">
+              <i class="bi bi-compass me-1"></i>{{
+              data.session_stats.distance_formatted | default('N/A') }}
+              <span class="text-muted"
+                >({{ data.session_stats.pedometer | default(0) }} m)</span
+              >
+            </dd>
+
+            <dt class="col-sm-4 text-muted">Utrata Krwi:</dt>
+            <dd class="col-sm-8">
+              {{ data.session_stats.blood_loss | default(0) }}
+            </dd>
+
+            <dt class="col-sm-4 text-muted">Śmierci w Sesji:</dt>
+            <dd class="col-sm-8">
+              {{ data.session_stats.deaths | default(0) }}
+            </dd>
+          </dl>
+        </div>
+      </div>
+      <!-- Koniec Karta: Statystyki Sesji -->
+
+      <!-- Karta: Statystyki Ogólne -->
+      <div class="card shadow-sm mb-4 flex-grow-1">
+        <div class="card-header">
+          <h3 class="h6 mb-0">
+            <i class="bi bi-bar-chart-line-fill me-2"></i>Statystyki Ogólne (po
+            rajdzie)
+          </h3>
+        </div>
+        <div class="card-body p-3">
+          <dl class="row mb-0 small gy-3">
+            {# gy-3 dla większego odstępu pionowego #}
+            <dt class="col-sm-4 text-muted">Sesje PMC:</dt>
+            <dd class="col-sm-8">
+              {{ data.overall_stats.sessions | default('N/A') }}
+            </dd>
+
+            <dt class="col-sm-4 text-muted">Przeżyte Sesje:</dt>
+            <dd class="col-sm-8">
+              {{ data.overall_stats.survived_sessions | default('N/A') }}
+            </dd>
+
+            <dt class="col-sm-4 text-muted align-self-center">
+              Survival Rate:
+            </dt>
+            {# align-self-center dla lepszego wyrównania z paskiem #}
+            <dd class="col-sm-8">
+              {{ data.overall_stats.survival_rate | default('N/A') }} {% if
+              data.overall_stats.sessions and data.overall_stats.sessions > 0 %}
+              {% set survival_rate_val = (data.overall_stats.survived_sessions |
+              int / data.overall_stats.sessions | int * 100) | round(1) %}
+              <div
+                class="progress mt-1"
+                style="height: 18px"
+                title="{{ survival_rate_val }}%"
+              >
+                <div
+                  class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                  role="progressbar"
+                  style="width: {{ survival_rate_val }}%;"
+                  aria-valuenow="{{ survival_rate_val }}"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                >
+                  {{ survival_rate_val }}%
+                </div>
+              </div>
+              {% endif %}
+            </dd>
+
+            <dt class="col-sm-4 text-muted">Zabójstwa:</dt>
+            <dd class="col-sm-8">
+              {{ data.overall_stats.kills | default('N/A') }}
+            </dd>
+
+            <dt class="col-sm-4 text-muted">Śmierci:</dt>
+            <dd class="col-sm-8">
+              {{ data.overall_stats.deaths | default('N/A') }}
+            </dd>
+
+            <dt class="col-sm-4 text-muted">K/D Ratio:</dt>
+            <dd class="col-sm-8">
+              {{ data.overall_stats.kd_ratio | default('N/A') }}
+            </dd>
+
+            <dt class="col-sm-4 text-muted">Headshoty:</dt>
+            <dd class="col-sm-8">
+              {{ data.overall_stats.headshots | default('N/A') }}
+            </dd>
+
+            <dt class="col-sm-4 text-muted">Najdłuższy Strzał:</dt>
+            <dd class="col-sm-8">
+              {{ data.overall_stats.longest_shot_formatted | default('N/A') }}
+              <span class="text-muted"
+                >({{ data.overall_stats.longest_shot | default(0) }} m)</span
+              >
+            </dd>
+          </dl>
+        </div>
+      </div>
+      <!-- Koniec Karta: Statystyki Ogólne -->
+
+      <!-- Karta: Końcowe Zdrowie i Witalność -->
+      <div class="card shadow-sm mb-4 flex-grow-1">
+        <div class="card-header">
+          <h3 class="h6 mb-0">
+            <i class="bi bi-heart-pulse-fill me-2"></i>Końcowe Zdrowie i
+            Witalność
+          </h3>
+        </div>
+        <div class="card-body p-3">
+          <div class="row">
+            <div class="col-md-6 mb-3 mb-md-0">
+              <h4 class="h6 small text-muted mb-2">
+                <i class="bi bi-lightning-charge me-1"></i>Witalność
+              </h4>
+              <ul class="list-unstyled small">
+                {% if data.final_vitals.MaxEnergy and
+                data.final_vitals.MaxEnergy > 0 %} {% set energy_perc =
+                (data.final_vitals.Energy | float / data.final_vitals.MaxEnergy
+                | float * 100) | round | int %}
+                <li class="mb-2">
+                  <strong>Energia:</strong> {{ data.final_vitals.Energy |
+                  default('?') }} / {{ data.final_vitals.MaxEnergy |
+                  default('?') }}
+                  <div class="progress mt-1" style="height: 15px">
+                    <div
+                      class="progress-bar progress-bar-striped progress-bar-animated bg-warning text-dark"
+                      role="progressbar"
+                      style="width: {{ energy_perc }}%;"
+                      aria-valuenow="{{ energy_perc }}"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    >
+                      {{ energy_perc }}%
+                    </div>
+                  </div>
+                </li>
+                {% else %}
+                <li class="mb-2">
+                  <strong>Energia:</strong> {{ data.final_vitals.Energy |
+                  default('N/A') }} / {{ data.final_vitals.MaxEnergy |
+                  default('N/A') }}
+                </li>
+                {% endif %} {% if data.final_vitals.MaxHydration and
+                data.final_vitals.MaxHydration > 0 %} {% set hydration_perc =
+                (data.final_vitals.Hydration | float /
+                data.final_vitals.MaxHydration | float * 100) | round | int %}
+                <li class="mb-2">
+                  <strong>Nawodnienie:</strong> {{ data.final_vitals.Hydration |
+                  default('?') }} / {{ data.final_vitals.MaxHydration |
+                  default('?') }}
+                  <div class="progress mt-1" style="height: 15px">
+                    <div
+                      class="progress-bar progress-bar-striped progress-bar-animated bg-info text-dark"
+                      role="progressbar"
+                      style="width: {{ hydration_perc }}%;"
+                      aria-valuenow="{{ hydration_perc }}"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    >
+                      {{ hydration_perc }}%
+                    </div>
+                  </div>
+                </li>
+                {% else %}
+                <li class="mb-2">
+                  <strong>Nawodnienie:</strong> {{ data.final_vitals.Hydration |
+                  default('N/A') }} / {{ data.final_vitals.MaxHydration |
+                  default('N/A') }}
+                </li>
+                {% endif %}
+
+                <li class="mb-1">
+                  <strong>Temperatura:</strong> {{ data.final_vitals.Temperature
+                  | default('N/A') }}
+                </li>
+                <li class="mb-1">
+                  <strong>Trucizna:</strong> {{ data.final_vitals.Poison |
+                  default('N/A') }}
+                </li>
+              </ul>
+            </div>
+            <div class="col-md-6 border-start-md ps-md-3">
+              {% if data.final_health %}
+              <h4 class="h6 small text-muted mb-2">
+                <i class="bi bi-shield-plus me-1"></i>Zdrowie Części Ciała
+              </h4>
+              <ul class="list-unstyled small">
+                {% for part_name, health_info in data.final_health.items() %}
+                <li class="mb-1">
+                  <strong>{{ part_name }}:</strong> {{ health_info.current |
+                  default('?') }} / {{ health_info.maximum | default('?') }} {%
+                  if health_info.effects %}
+                  <span class="text-danger small"
+                    >(Efekty: {{ health_info.effects | join(', ') }})</span
+                  >
+                  {% endif %} {% if health_info.maximum and health_info.maximum
+                  > 0 and health_info.current is number %} {% set health_perc =
+                  (health_info.current / health_info.maximum * 100) | round |
+                  int %} {% set health_bg = 'bg-success' if health_perc > 60
+                  else ('bg-warning text-dark' if health_perc > 20 else
+                  'bg-danger') %}
+                  <div class="progress mt-1" style="height: 8px">
+                    <div
+                      class="progress-bar progress-bar-striped {{ health_bg }}"
+                      role="progressbar"
+                      style="width: {{ health_perc }}%;"
+                      aria-valuenow="{{ health_perc }}"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    ></div>
+                  </div>
+                  {% endif %}
+                </li>
+                {% endfor %}
+              </ul>
+              {% else %}
+              <p class="text-muted small fst-italic mt-2">
+                Brak danych o końcowym zdrowiu części ciała.
+              </p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Koniec Karta: Końcowe Zdrowie i Witalność -->
+    </div>
+    {# === KONIEC PRAWEJ KOLUMNY === #}
+  </div>
+  {# Koniec row g-4 dla głównych kolumn #} {# === SEKCJA OFIAR I UMIEJĘTNOŚCI
+  === #}
+  <div class="row g-4 mt-1">
+    {# mt-1 zamiast mt-4, bo g-4 już daje odstęp #} {# Kolumna Ofiary #}
+    <div class="col-lg-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-header">
+          <h3 class="h6 mb-0">
+            <i class="bi bi-trophy me-2"></i>Ofiary Gracza w Rajdzie ({{
+            data.kills_count | default(0) }})
+          </h3>
+        </div>
+        <div class="card-body p-3">
+          {% if data.victims %}
+          <ul class="list-group list-group-flush">
+            {% for victim in data.victims %}
+            <li class="list-group-item px-0 py-2">
+              {# Usunięto padding x, dodano padding y #}
+              <div
+                class="d-flex justify-content-between align-items-center mb-1"
+              >
+                <strong>{{ victim.Name | default('Nieznany') }}</strong>
+                <small class="text-muted text-end">
+                  Lvl: {{ victim.Level | default('?') }} | {{
+                  victim.RoleTranslated | default(victim.Role | default('?')) }}
+                  | {{ victim.SideTranslated | default(victim.Side |
+                  default('?')) }}
+                </small>
+              </div>
+              <div>
+                <span
+                  class="badge bg-secondary bg-opacity-75 me-1 small fw-normal"
+                  ><i class="bi bi- activité me-1"></i>{{ victim.WeaponName |
+                  default(victim.Weapon | default('?')) }}</span
+                >
+                <span
+                  class="badge bg-info bg-opacity-75 text-dark me-1 small fw-normal"
+                  ><i class="bi bi-bullseye me-1"></i>{{
+                  victim.DistanceFormatted | default('?') }}</span
+                >
+                <span
+                  class="badge bg-warning bg-opacity-75 text-dark small fw-normal"
+                  ><i class="bi bi-geo-alt me-1"></i>{{
+                  victim.BodyPartTranslated | default(victim.BodyPart |
+                  default('?')) }}</span
+                >
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <p class="text-muted mb-0">Brak ofiar w tym rajdzie.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {# Koniec Kolumna Ofiary #} {# Kolumna Umiejętności #}
+    <div class="col-lg-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-header">
+          <h3 class="h6 mb-0">
+            <i class="bi bi-star-fill me-2"></i>Zmienione Umiejętności
+          </h3>
+        </div>
+        <div class="card-body p-3">
+          {% if data.skills_changed %}
+          <ul class="list-unstyled">
+            {% for skill in data.skills_changed %}
+            <li class="mb-3">
+              {# Dodano mb-3 dla odstępu między umiejętnościami #}
+              <div class="d-flex justify-content-between align-items-center">
+                <strong class="small"
+                  >[{{ skill.SkillType | default('?') }}] {{ skill.SkillName |
+                  default(skill.Id | default('Nieznana')) }}</strong
+                >
+                <div>
+                  {% if skill.PointsEarnedFormatted != 'N/A' and
+                  skill.PointsEarnedFormatted != '0.00' %}
+                  <span class="badge bg-success me-2"
+                    >+{{ skill.PointsEarnedFormatted }}</span
+                  >
+                  {% endif %}
+                  <small class="text-muted"
+                    >(Progress: {{ skill.ProgressFormatted | default('N/A')
+                    }})</small
+                  >
+                </div>
+              </div>
+              {% if skill.Progress is number and skill.Progress >= 0 and
+              skill.Progress <= 100 %}
+              <div class="progress mt-1" style="height: 8px">
+                <div
+                  class="progress-bar progress-bar-striped progress-bar-animated bg-secondary"
+                  role="progressbar"
+                  style="width: {{ skill.Progress }}%;"
+                  aria-valuenow="{{ skill.Progress }}"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                ></div>
+              </div>
+              {% endif %} {# Usunięto
+              <hr />
+              , mb-3 robi za separator #}
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <p class="text-muted mb-0">
+            Brak zmian w umiejętnościach w tym rajdzie.
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {# Koniec Kolumna Umiejętności #}
+  </div>
+  {# === KONIEC SEKCJI OFIAR I UMIEJĘTNOŚCI === #} {# === SEKCJA PRZEDMIOTÓW ===
+  #} {% macro item_card(title, items, card_class='bg-body-tertiary',
+  icon='bi-box-seam') %} {% if items %}
+  <div class="col">
+    {# Usunięto md/lg, pozwólmy Bootstrapowi układać #}
+    <div class="card shadow-sm h-100 {{ card_class }}">
+      <div class="card-header">
+        <h3 class="h6 mb-0 small">
+          <i class="bi {{ icon }} me-1"></i>{{ title }}
+        </h3>
+      </div>
+      <div class="card-body p-2">
+        {# Mniejszy padding #}
+        <ul class="list-group list-group-flush">
+          {% for item in items %}
+          <li
+            class="list-group-item d-flex justify-content-between align-items-center small p-1 {{ card_class }}"
+          >
+            {# Mniejszy padding #}
+            <span
+              >{{ item.name }}
+              <span class="text-muted">({{ item.id }})</span></span
+            >
+            <span class="badge bg-dark rounded-pill ms-1"
+              >{{ item.count }}</span
+            >
+          </li>
           {% endfor %}
         </ul>
-      </li>
-      {% endif %}
-      <li>
-        Zniszczone części ciała: {{ data.session_stats.body_parts_destroyed |
-        default(0) }}
-      </li>
-      <li>
-        Przebyty dystans: {{ data.session_stats.distance_formatted |
-        default('N/A') }} ({{ data.session_stats.pedometer | default(0) }} m)
-      </li>
-      <li>Utrata krwi: {{ data.session_stats.blood_loss | default(0) }}</li>
-      <li>Śmierci w sesji: {{ data.session_stats.deaths | default(0) }}</li>
-    </ul>
+      </div>
+    </div>
   </div>
-
-  <div>
-    <h2>Statystyki Ogólne (po rajdzie)</h2>
-    <ul>
-      <li>Sesje PMC: {{ data.overall_stats.sessions | default('N/A') }}</li>
-      <li>
-        Przeżyte sesje PMC: {{ data.overall_stats.survived_sessions |
-        default('N/A') }}
-      </li>
-      <li>
-        Współczynnik przetrwania PMC: {{ data.overall_stats.survival_rate |
-        default('N/A') }}
-      </li>
-      <hr />
-      <li>
-        Zabójstwa (ogółem): {{ data.overall_stats.kills | default('N/A') }}
-      </li>
-      <li>
-        Śmierci (ogółem): {{ data.overall_stats.deaths | default('N/A') }}
-      </li>
-      <li>
-        Współczynnik K/D (ogółem): {{ data.overall_stats.kd_ratio |
-        default('N/A') }}
-      </li>
-      <li>
-        Headshoty (ogółem): {{ data.overall_stats.headshots | default('N/A') }}
-      </li>
-      <li>
-        Najdłuższy strzał: {{ data.overall_stats.longest_shot_formatted |
-        default('N/A') }} ({{ data.overall_stats.longest_shot | default(0) }} m)
-      </li>
-    </ul>
+  {% endif %} {% endmacro %} {# Dynamiczne dodawanie wiersza dla kart
+  przedmiotów #} {% set item_cards_exist = data.transfer_items or
+  data.found_in_raid_items or data.dropped_items or data.lost_insured_items or
+  data.carried_quest_items %} {% if item_cards_exist %}
+  <div
+    class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-5 g-3 mt-3"
+  >
+    {# Układ kolumn zależny od szerokości ekranu #} {{ item_card('Transfer',
+    data.transfer_items, 'bg-light', 'bi-arrow-down-up') }} {{ item_card('FIR',
+    data.found_in_raid_items, 'bg-success bg-opacity-10',
+    'bi-bookmark-check-fill') }} {{ item_card('Upuszczone', data.dropped_items,
+    'bg-warning bg-opacity-25', 'bi-trash3') }} {{ item_card('Utracone Ubezp.',
+    data.lost_insured_items, 'bg-danger bg-opacity-25', 'bi-shield-slash') }} {{
+    item_card('Questowe', data.carried_quest_items, 'bg-info bg-opacity-25',
+    'bi-journal-bookmark-fill') }}
   </div>
-
-  {% if data.victims %}
-  <div>
-    <h2>Ofiary gracza w tym rajdzie ({{ data.kills_count }})</h2>
-    <ul>
-      {% for victim in data.victims %}
-      <li>
-        {{ victim.Name | default('Nieznany') }} (Poziom: {{ victim.Level |
-        default('?') }}, Rola: {{ victim.RoleTranslated | default(victim.Role |
-        default('?')) }}, Strona: {{ victim.SideTranslated | default(victim.Side
-        | default('?')) }}) - Broń: {{ victim.WeaponName | default(victim.Weapon
-        | default('?')) }}, Dystans: {{ victim.DistanceFormatted | default('?')
-        }}, Trafienie: {{ victim.BodyPartTranslated | default(victim.BodyPart |
-        default('?')) }}
-      </li>
-      {% endfor %}
-    </ul>
+  {% endif %} {# === KONIEC SEKCJI PRZEDMIOTÓW === #} {# === NAWIGACJA === #}
+  <div class="mt-5 text-center border-top pt-4">
+    <a
+      href="{{ url_for('player_details', nickname=data.nickname) }}"
+      class="btn btn-secondary me-2"
+    >
+      <i class="bi bi-arrow-left-circle me-1"></i> Powrót do rajdów gracza {{
+      data.nickname }}
+    </a>
+    <a href="{{ url_for('index') }}" class="btn btn-primary">
+      <i class="bi bi-house me-1"></i> Strona główna
+    </a>
   </div>
-  {% else %} {# Można dodać informację o braku ofiar, jeśli chcesz #}
-  <!-- <div>Brak ofiar w tym rajdzie.</div> -->
-  {% endif %} {% if data.skills_changed %}
-  <div>
-    <h2>Zmienione Umiejętności</h2>
-    <ul>
-      {% for skill in data.skills_changed %}
-      <li>
-        [{{ skill.SkillType | default('?') }}] {{ skill.SkillName |
-        default(skill.Id | default('Nieznana')) }}: {% if
-        skill.PointsEarnedFormatted != 'N/A' and skill.PointsEarnedFormatted !=
-        '0.00' %} +{{ skill.PointsEarnedFormatted }} {% endif %} (Progress: {{
-        skill.ProgressFormatted | default('N/A') }})
-      </li>
-      {% endfor %}
-    </ul>
+  {# === KONIEC NAWIGACJI === #} {% elif not error %} {# Komunikat, jeśli nie ma
+  błędu i nie ma danych #}
+  <div class="alert alert-warning d-flex align-items-center" role="alert">
+    <i class="bi bi-journal-x me-2"></i>
+    <div>
+      Nie znaleziono danych dla tego rajdu lub plik był pusty/nieprawidłowy.
+    </div>
   </div>
-  {% endif %} {# Sekcje przedmiotów - dodano Dropped Items #} {% if
-  data.transfer_items %}
-  <div>
-    <h2>Przedmioty zabrane z rajdu (Transfer)</h2>
-    <ul>
-      {% for item in data.transfer_items %}
-      <li>{{ item.name }} (ID: {{ item.id }}) - Ilość: {{ item.count }}</li>
-      {% endfor %}
-    </ul>
-  </div>
-  {% endif %} {% if data.found_in_raid_items %}
-  <div>
-    <h2>Przedmioty znalezione w rajdzie (FIR)</h2>
-    <ul>
-      {% for item in data.found_in_raid_items %}
-      <li>{{ item.name }} (ID: {{ item.id }}) - Ilość: {{ item.count }}</li>
-      {% endfor %}
-    </ul>
-  </div>
-  {% endif %} {% if data.dropped_items %}
-  <div>
-    <h2>Przedmioty upuszczone w rajdzie</h2>
-    <ul>
-      {% for item in data.dropped_items %}
-      <li>{{ item.name }} (ID: {{ item.id }}) - Ilość: {{ item.count }}</li>
-      {% endfor %}
-    </ul>
-  </div>
-  {% endif %} {% if data.lost_insured_items %}
-  <div>
-    <h2>Utracone ubezpieczone przedmioty</h2>
-    <ul>
-      {% for item in data.lost_insured_items %}
-      <li>{{ item.name }} (ID: {{ item.id }}) - Ilość: {{ item.count }}</li>
-      {% endfor %}
-    </ul>
-  </div>
-  {% endif %} {% if data.carried_quest_items %}
-  <div>
-    <h2>Przedmioty questowe wyniesione</h2>
-    <ul>
-      {% for item in data.carried_quest_items %}
-      <li>{{ item.name }} (ID: {{ item.id }}) - Ilość: {{ item.count }}</li>
-      {% endfor %}
-    </ul>
-  </div>
-  {% endif %}
-
-  <div>
-    <h2>Końcowe zdrowie i witalność</h2>
-    <ul>
-      <li>
-        Energia: {{ data.final_vitals.Energy | default('N/A') }} / {{
-        data.final_vitals.MaxEnergy | default('N/A') }}
-      </li>
-      <li>
-        Nawodnienie: {{ data.final_vitals.Hydration | default('N/A') }} / {{
-        data.final_vitals.MaxHydration | default('N/A') }}
-      </li>
-      <li>Temperatura: {{ data.final_vitals.Temperature | default('N/A') }}</li>
-      <li>Trucizna: {{ data.final_vitals.Poison | default('N/A') }}</li>
-    </ul>
-    {% if data.final_health %}
-    <div>Zdrowie i efekty części ciała:</div>
-    <ul>
-      {% for part_name, health_info in data.final_health.items() %}
-      <li>
-        {{ part_name }}: {{ health_info.current | default('N/A') }} / {{
-        health_info.maximum | default('N/A') }} {% if health_info.effects %}
-        (Efekty: {{ health_info.effects | join(', ') }}) {% endif %}
-      </li>
-      {% endfor %}
-    </ul>
-    {% endif %}
-  </div>
-
-  {# Linki nawigacyjne #}
-  <div>
-    <a href="{{ url_for('player_details', nickname=data.nickname) }}"
-      >Powrót do rajdów gracza {{ data.nickname }}</a
+  <div class="mt-3 text-center">
+    <a href="{{ url_for('index') }}" class="btn btn-primary"
+      ><i class="bi bi-house me-1"></i>Powrót do strony głównej</a
     >
   </div>
-  <div>
-    <a href="{{ url_for('index') }}">Powrót do strony głównej</a>
-  </div>
+  {% endif %} {# Koniec warunku if data #}
 </div>
-<!-- Koniec głównego kontenera danych rajdu -->
-{% elif not error %} {# Dodano warunek, aby nie wyświetlać tego, jeśli był błąd
-#}
-<div>
-  Nie znaleziono danych dla tego rajdu lub plik był pusty/nieprawidłowy.
-</div>
-<div><a href="{{ url_for('index') }}">Powrót do strony głównej</a></div>
-{% endif %} {% endblock %}
+<!-- Koniec kontenera -->
+{% endblock %}

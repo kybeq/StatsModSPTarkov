@@ -38,14 +38,14 @@ endblock %} {% block content %}
   </h2>
   <div class="card shadow-sm animate-fade-in">
     <div class="row g-0">
-      <div class="col-md-4">
+      <div class="col-md-6">
         <img
-          src="{{ url_for('static', filename='images/raid-placeholder.jpg') }}"
+          src="{{ url_for('static', filename='images/maps/factory.avif') }}"
           class="img-fluid rounded-start"
           alt="Ostatni rajd"
         />
       </div>
-      <div class="col-md-8">
+      <div class="col-md-6">
         <div class="card-body">
           <h3 class="card-title">{{ latest_raid.location }}</h3>
           <div class="mb-3">
