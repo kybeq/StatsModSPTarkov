@@ -1,0 +1,213 @@
+{% extends "base.html" %} {% block title %}Szczegóły rajdu: {{ filename }}{%
+endblock %} {% block content %}
+<div>
+  <h1>Szczegóły rajdu: {{ filename }}</h1>
+</div>
+
+{% if error %}
+<div>
+  <h2>Błąd ładowania rajdu</h2>
+  <div>{{ error }}</div>
+  <div><a href="{{ url_for('index') }}">Powrót do strony głównej</a></div>
+</div>
+{% elif data %}
+<div>
+  <!-- Główny kontener danych rajdu -->
+
+  <div>
+    <h2>Podstawowe informacje</h2>
+    <ul>
+      <li>
+        Gracz: {{ data.nickname }} (Poziom: {{ data.level }}, Strona: {{
+        data.side }})
+      </li>
+      <li>Mapa: {{ data.location }} (ID: {{ data.location_id }})</li>
+      <li>Wynik rajdu: {{ data.raid_result }}</li>
+      {% if data.exit_name %}
+      <li>Wyjście: {{ data.exit_name }}</li>
+      {% endif %}
+      <li>
+        Czas w rajdzie: {{ data.play_time_formatted }} ({{
+        data.play_time_seconds }}s)
+      </li>
+      <li>
+        Data rajdu: {{ data.timestamp.strftime('%Y-%m-%d %H:%M:%S') if
+        data.timestamp else 'Brak daty' }}
+      </li>
+      <li>Server ID: {{ data.server_id }}</li>
+      <li>Liczba graczy (placeholder): {{ data.player_count_in_raid }}</li>
+    </ul>
+  </div>
+
+  {% if data.killer_info %}
+  <div>
+    <h2>Informacje o zabójcy</h2>
+    <ul>
+      <li>Imię: {{ data.killer_info.name or 'Nieznany' }}</li>
+      <li>Strona: {{ data.killer_info.side or 'Nieznana' }}</li>
+      <li>Broń: {{ data.killer_info.weapon_name or 'Nieznana' }}</li>
+      <li>
+        Trafiona część ciała: {{ data.killer_info.killed_by_part or 'Nieznana'
+        }}
+      </li>
+      {% if data.killer_info.lethal_damage_amount is not none %}
+      <li>
+        Obrażenia śmiertelne: {{ data.killer_info.lethal_damage_amount }} (Typ:
+        {{ data.killer_info.lethal_damage_type or 'Nieznany' }})
+      </li>
+      {% endif %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <div>
+    <h2>Statystyki Sesji</h2>
+    <ul>
+      <li>
+        Doświadczenie (Suma): {{ data.total_session_exp_calculated }} (Z JSON:
+        {{ data.total_session_exp_from_json }})
+      </li>
+      <li>EXP za zabójstwa: {{ data.session_stats.exp_kill }}</li>
+      <li>EXP za przeszukiwanie: {{ data.session_stats.exp_looting }}</li>
+      <li>EXP za status wyjścia: {{ data.session_stats.exp_exit_status }}</li>
+      <li>Zadane obrażenia: {{ data.session_stats.damage_dealt }}</li>
+      <li>
+        Otrzymane obrażenia (Suma): {{ data.session_stats.damage_received_total
+        }}
+      </li>
+      {% if data.session_stats.damage_received_details %}
+      <li>
+        <div>Otrzymane obrażenia (Szczegóły):</div>
+        <ul>
+          {% for part, dmg in data.session_stats.damage_received_details.items()
+          %}
+          <li>{{ part }}: {{ dmg }}</li>
+          {% endfor %}
+        </ul>
+      </li>
+      {% endif %}
+      <li>
+        Zniszczone części ciała: {{ data.session_stats.body_parts_destroyed }}
+      </li>
+      <li>
+        Przebyty dystans: {{ data.session_stats.distance_formatted }} ({{
+        data.session_stats.pedometer }} m)
+      </li>
+      <li>Utrata krwi: {{ data.session_stats.blood_loss }}</li>
+      <li>Śmierci w sesji: {{ data.session_stats.deaths }}</li>
+    </ul>
+  </div>
+
+  <div>
+    <h2>Statystyki Ogólne (po rajdzie)</h2>
+    <ul>
+      <li>Sesje: {{ data.overall_stats.sessions }}</li>
+      <li>Przeżyte sesje: {{ data.overall_stats.survived_sessions }}</li>
+      <li>Współczynnik przetrwania: {{ data.overall_stats.survival_rate }}</li>
+      <li>Zabójstwa: {{ data.overall_stats.kills }}</li>
+      <li>Śmierci: {{ data.overall_stats.deaths }}</li>
+      <li>Współczynnik K/D: {{ data.overall_stats.kd_ratio }}</li>
+    </ul>
+  </div>
+
+  {% if data.victims %}
+  <div>
+    <h2>Ofiary gracza ({{ data.kills_count }})</h2>
+    <ul>
+      {% for victim in data.victims %}
+      <li>
+        {{ victim.Name }} (Poziom: {{ victim.Level }}, Rola: {{
+        victim.RoleTranslated }}, Strona: {{ victim.SideTranslated }}) - Broń:
+        {{ victim.WeaponName }}, Dystans: {{ victim.DistanceFormatted }}, Ciało:
+        {{ victim.BodyPartTranslated }}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %} {% if data.skills_changed %}
+  <div>
+    <h2>Zmienione Umiejętności</h2>
+    <ul>
+      {% for skill in data.skills_changed %}
+      <li>
+        {{ skill.SkillName }}: +{{ skill.PointsEarnedFormatted }} (Nowy
+        progress: {{ skill.ProgressFormatted }})
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %} {% if data.transfer_items %}
+  <div>
+    <h2>Przedmioty zabrane z rajdu</h2>
+    <ul>
+      {% for item in data.transfer_items %}
+      <li>{{ item.name }} (ID: {{ item.id }}) - Ilość: {{ item.count }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %} {% if data.found_in_raid_items %}
+  <div>
+    <h2>Przedmioty znalezione w rajdzie (FIR)</h2>
+    <ul>
+      {% for item in data.found_in_raid_items %}
+      <li>{{ item.name }} (ID: {{ item.id }}) - Ilość: {{ item.count }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %} {% if data.lost_insured_items %}
+  <div>
+    <h2>Utracone ubezpieczone przedmioty</h2>
+    <ul>
+      {% for item in data.lost_insured_items %}
+      <li>{{ item.name }} (ID: {{ item.id }}) - Ilość: {{ item.count }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %} {% if data.carried_quest_items %}
+  <div>
+    <h2>Przedmioty questowe wyniesione</h2>
+    <ul>
+      {% for item in data.carried_quest_items %}
+      <li>{{ item.name }} (ID: {{ item.id }}) - Ilość: {{ item.count }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <div>
+    <h2>Końcowe zdrowie i witalność</h2>
+    <ul>
+      <li>
+        Energia: {{ data.final_vitals.Energy }} / {{ data.final_vitals.MaxEnergy
+        }}
+      </li>
+      <li>
+        Nawodnienie: {{ data.final_vitals.Hydration }} / {{
+        data.final_vitals.MaxHydration }}
+      </li>
+      <li>Temperatura: {{ data.final_vitals.Temperature }}</li>
+    </ul>
+    {% if data.final_health %}
+    <div>Zdrowie części ciała:</div>
+    <ul>
+      {% for part, health in data.final_health.items() %}
+      <li>{{ part }}: {{ health.current }} / {{ health.maximum }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+
+  <div>
+    <a href="{{ url_for('player_details', nickname=data.nickname) }}"
+      >Powrót do rajdów gracza {{ data.nickname }}</a
+    >
+  </div>
+  <div>
+    <a href="{{ url_for('index') }}">Powrót do strony głównej</a>
+  </div>
+</div>
+<!-- Koniec głównego kontenera danych rajdu -->
+{% else %}
+<div>Nie znaleziono danych dla tego rajdu.</div>
+<div><a href="{{ url_for('index') }}">Powrót do strony głównej</a></div>
+{% endif %} {% endblock %}

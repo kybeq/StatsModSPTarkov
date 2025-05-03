@@ -1,0 +1,56 @@
+{% extends "base.html" %} {% block title %}Strona Główna - Analizator Rajdów{%
+endblock %} {% block content %}
+<div>
+  <h1>Witaj w Analizatorze Rajdów</h1>
+</div>
+
+{% if errors %}
+<div>
+  <h2>Wystąpiły błędy podczas ładowania danych:</h2>
+  <ul>
+    {% for error in errors %}
+    <li>{{ error }}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %} {% if latest_raid %}
+<div>
+  <h2>Ostatni zarejestrowany rajd:</h2>
+  <ul>
+    <li>Gracz: {{ latest_raid.nickname }}</li>
+    <li>Mapa: {{ latest_raid.location }}</li>
+    <li>Wynik: {{ latest_raid.raid_result }}</li>
+    <li>Czas: {{ latest_raid.play_time_formatted }}</li>
+    <li>
+      Data: {{ latest_raid.timestamp.strftime('%Y-%m-%d %H:%M:%S') if
+      latest_raid.timestamp else 'Brak daty' }}
+    </li>
+    <li>
+      <a href="{{ url_for('raid_details', filename=latest_raid.filename) }}"
+        >Zobacz szczegóły</a
+      >
+    </li>
+  </ul>
+</div>
+{% endif %}
+
+<div>
+  <h2>Gracze:</h2>
+  {% if players %}
+  <ul>
+    {% for nickname, player_info in players %}
+    <li>
+      <a href="{{ url_for('player_details', nickname=nickname) }}"
+        >{{ nickname }}</a
+      >
+      (Poziom: {{ player_info.latest_level }}, Strona: {{
+      player_info.latest_side }}, Rajdów: {{ player_info.raid_count }})
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div>Brak znalezionych graczy.</div>
+  {% endif %}
+</div>
+
+{% endblock %}
