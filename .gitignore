@@ -1,0 +1,49 @@
+# Ignorowanie folderów z zależnościami
+node_modules/
+bower_components/
+
+# Ignorowanie plików generowanych przez build
+dist/
+build/
+out/
+
+# Ignorowanie plików tymczasowych i cache
+.cache/
+*.cache
+*.log
+*.tmp
+temp/
+
+# Ignorowanie plików konfiguracyjnych edytorów
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Ignorowanie plików systemowych
+.DS_Store
+Thumbs.db
+
+# Ignorowanie plików z danymi środowiskowymi
+.env
+.env.local
+.env.*.local
+
+# Ignorowanie skompresowanych archiwów
+*.zip
+*.tar.gz
+*.rar
+
+# Ignorowanie plików wynikowych i testowych
+coverage/
+*.test.js
+*.spec.js
+
+# Ignorowanie innych niepotrzebnych plików
+*.bak
+*.swp
+*~
+
+# Ignorowanie specyficznych dla projektu folderów (możesz dostosować)
+public/assets/
+src/assets/

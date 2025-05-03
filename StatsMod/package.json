@@ -1,0 +1,8 @@
+{
+  "name": "stats-mod",
+  "version": "1.0.0",
+  "main": "mod.js",
+  "license": "MIT",
+  "author": "kybeq",
+  "sptVersion": "3.11"
+}

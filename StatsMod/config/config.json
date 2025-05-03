@@ -1,0 +1,7 @@
+{
+  "enabled": true,
+  "trackKills": true,
+  "trackLootValue": false,
+  "maxRaidHistory": 50,
+  "persistentStatsFilePath": "stats_data.json"
+}
