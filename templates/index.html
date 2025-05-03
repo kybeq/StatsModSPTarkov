@@ -1,7 +1,5 @@
 {% extends "base.html" %} {% block title %}Strona Główna - Raporty z Rajdów{%
 endblock %} {% block content %}
-<h1 class="mb-4 display-5">Panel Raportów</h1>
-{# Użyto display dla większego nagłówka #}
 
 <div class="row section-spacer">
   {# Dodano section-spacer #}
@@ -10,7 +8,7 @@ endblock %} {% block content %}
     <h2>Ostatni rajd</h2>
     {% if latest_raid %} {# Usunięto raid-result-* z karty, dodano card-reveal
     #}
-    <div class="card card-reveal h-100">
+    <div class="card card-reveal">
       {# h-100 dla równej wysokości w wierszu #}
       <div
         class="card-header d-flex justify-content-between align-items-center"
