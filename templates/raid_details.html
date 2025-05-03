@@ -1,0 +1,518 @@
+{% extends "base.html" %} {% block title %}Szczegóły rajdu{% if data %} - {{
+data.location }} ({{ data.nickname }}){% endif %}{% endblock %} {% block content
+%}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+  <h1 class="mb-2 mb-md-0 me-3">
+    <i class="bi bi-clipboard-data-fill me-2 text-primary"></i>Szczegóły rajdu
+  </h1>
+  {# Ikona raportu #}
+  <div>
+    {% if data and data.nickname %}
+    <a
+      href="{{ url_for('player_details', nickname=data.nickname) }}"
+      class="btn btn-outline-secondary btn-sm me-1"
+    >
+      <i class="bi bi-person-fill me-1"></i> Rajdy gracza
+    </a>
+    {% endif %}
+    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-house-door-fill me-1"></i> Strona główna
+    </a>
+  </div>
+</div>
+
+{% if error %}
+<div class="alert alert-danger d-flex align-items-start" role="alert">
+  <i class="alert-icon bi bi-exclamation-octagon-fill"></i>
+  <div class="alert-content ms-3">
+    <h4 class="alert-heading mb-1">Błąd ładowania rajdu</h4>
+    <p class="mb-0">
+      <small>Plik: <code>{{ filename }}</code></small>
+    </p>
+    <p class="mb-0">{{ error }}</p>
+  </div>
+</div>
+{% elif not data %}
+<div class="alert alert-warning d-flex align-items-start" role="alert">
+  <i class="alert-icon bi bi-file-earmark-x-fill"></i>
+  <div class="alert-content ms-3">
+    <h4 class="alert-heading mb-1">Brak danych</h4>
+    Nie udało się załadować danych dla rajdu: <code>{{ filename }}</code>.
+  </div>
+</div>
+{% else %} {# --- Główna karta z podstawowymi informacjami --- #} {# Definicja
+klasy wyniku dla tekstu #} {% set result_class = 'text-status-warning' %} {% if
+data.raid_result == 'Killed' %} {% set result_class = 'text-status-danger' %} {%
+elif data.raid_result in ['Survived', 'Runner', 'Left'] %} {% set result_class =
+'text-status-success' %} {% endif %}
+
+<div class="card mb-4 card-reveal">
+  <div
+    class="card-header d-flex justify-content-between align-items-center flex-wrap"
+  >
+    <span class="me-3 mb-1 mb-md-0">
+      <i class="bi bi-geo-alt-fill text-muted me-1"></i>
+      <span class="badge bg-primary me-2 fs-6">{{ data.location }}</span>
+      <small class="text-muted"
+        >{{ data.timestamp.strftime('%Y-%m-%d %H:%M:%S') if data.timestamp else
+        '?' }}</small
+      >
+    </span>
+    {# Dodano raid-status-icon zamiast kolorowego tła nagłówka #}
+    <span class="fs-5 fw-semibold">
+      <span
+        class="raid-status-icon me-2"
+        style="background-color: var(--{{ result_class | replace('text-status-', 'color-') }});"
+      ></span>
+      {# Dynamiczny kolor kropki #} Wynik:
+      <strong class="{{ result_class }}">{{ data.raid_result }}</strong>
+    </span>
+  </div>
+  <div class="card-body">
+    {# Użycie list-key-value dla podstawowych info #}
+    <ul class="list-key-value row">
+      <li class="col-md-6 col-lg-4">
+        <span class="key">Gracz:</span>
+        <span class="value"
+          ><a
+            href="{{ url_for('player_details', nickname=data.nickname) }}"
+            class="player-link"
+            >{{ data.nickname }}</a
+          >
+          (Lvl {{ data.level }}, {{ data.side }})</span
+        >
+      </li>
+      <li class="col-md-6 col-lg-4">
+        <span class="key">Czas trwania:</span>
+        <span class="value">{{ data.play_time_formatted }}</span>
+      </li>
+      <li class="col-md-6 col-lg-4">
+        <span class="key">Wyjście:</span>
+        <span class="value">{{ data.exit_name | default('N/A') }}</span>
+      </li>
+      <li class="col-md-6 col-lg-4">
+        <span class="key">ID serwera:</span>
+        <span class="value"
+          ><small>{{ data.server_id | default('N/A') }}</small></span
+        >
+      </li>
+      <li class="col-md-6 col-lg-4">
+        <span class="key">EXP (JSON):</span>
+        <span class="value"
+          >{{ "{:,}".format(data.total_session_exp_from_json | int).replace(",",
+          " ") }}</span
+        >
+      </li>
+      <li class="col-md-6 col-lg-4">
+        <span class="key">EXP (Obliczone):</span>
+        <span class="value"
+          >{{ "{:,}".format(data.total_session_exp_calculated |
+          int).replace(",", " ") }}</span
+        >
+      </li>
+    </ul>
+  </div>
+</div>
+
+{# --- Główna zawartość w dwóch kolumnach --- #}
+<div class="row section-spacer">
+  <div class="col-lg-7 mb-4 mb-lg-0">
+    {# Lewa kolumna #} {# --- Informacje o śmierci --- #} {% if data.killer_info
+    %}
+    <div class="card mb-4 border-danger card-reveal">
+      {# Zwiększono mb #}
+      <div class="card-header">
+        {# Ikona dodawana przez CSS #} Informacje o śmierci
+      </div>
+      <div class="card-body">
+        <ul class="list-key-value no-margin">
+          {# Dodano no-margin #}
+          <li>
+            <span class="key">Zabójca:</span>
+            <span class="value"
+              >{{ data.killer_info.name | default('Nieznany') }} ({{
+              data.killer_info.side | default('?') }})</span
+            >
+          </li>
+          <li>
+            <span class="key">Broń:</span>
+            <span class="value"
+              >{{ data.killer_info.weapon_name | default('Nieznana') }}</span
+            >
+          </li>
+          <li>
+            <span class="key">Część ciała:</span>
+            <span class="value"
+              >{{ data.killer_info.killed_by_part | default('?') }}</span
+            >
+          </li>
+          <li>
+            <span class="key">Obrażenia:</span>
+            <span class="value"
+              >{{ data.killer_info.lethal_damage_amount | default('?') }} ({{
+              data.killer_info.lethal_damage_type | default('?') }})</span
+            >
+          </li>
+        </ul>
+      </div>
+    </div>
+    {% endif %} {# --- Statystyki sesji --- #} {% if data.session_stats %}
+    <div class="card mb-4 card-reveal">
+      <div class="card-header">Statystyki sesji</div>
+      <div class="card-body">
+        <ul class="list-key-value row no-margin">
+          <li class="col-md-6">
+            <span class="key">Zadane obrażenia:</span>
+            <span class="value">{{ data.session_stats.damage_dealt }}</span>
+          </li>
+          <li class="col-md-6">
+            <span class="key">Otrzymane obrażenia:</span>
+            <span class="value"
+              >{{ data.session_stats.damage_received_total }}</span
+            >
+          </li>
+          <li class="col-md-6">
+            <span class="key">Zniszczone części:</span>
+            <span class="value"
+              >{{ data.session_stats.body_parts_destroyed }}</span
+            >
+          </li>
+          <li class="col-md-6">
+            <span class="key">Dystans:</span>
+            <span class="value"
+              >{{ data.session_stats.distance_formatted }}</span
+            >
+          </li>
+          <li class="col-md-6">
+            <span class="key">Utrata krwi:</span>
+            <span class="value">{{ data.session_stats.blood_loss }}</span>
+          </li>
+          <li class="col-md-6">
+            <span class="key">EXP Kille:</span>
+            <span class="value"
+              >{{ "{:,}".format(data.session_stats.exp_kill | int).replace(",",
+              " ") }}</span
+            >
+          </li>
+          <li class="col-md-6">
+            <span class="key">EXP Loot:</span>
+            <span class="value"
+              >{{ "{:,}".format(data.session_stats.exp_looting |
+              int).replace(",", " ") }}</span
+            >
+          </li>
+          <li class="col-md-6">
+            <span class="key">EXP Wyjście:</span>
+            <span class="value"
+              >{{ "{:,}".format(data.session_stats.exp_exit_status |
+              int).replace(",", " ") }}</span
+            >
+          </li>
+        </ul>
+        {% if data.session_stats.damage_received_details %}
+        <hr class="my-3" />
+        {# Subtelny separator #}
+        <div class="small text-muted">
+          <strong class="d-block mb-1">Otrzymane obrażenia (szczegóły):</strong>
+          {% for part, dmg in
+          data.session_stats.damage_received_details.items()|sort %}
+          <span class="me-2"
+            >{{ part }}: <code class="small">{{ dmg }}</code></span
+          >
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %} {# --- Ofiary gracza --- #}
+    <div class="card mb-4 card-reveal">
+      {# Użyto card zamiast table-container dla spójności wyglądu #}
+      <div
+        class="card-header d-flex justify-content-between align-items-center"
+      >
+        <span>Ofiary gracza</span>
+        <span class="badge bg-secondary rounded-pill"
+          >{{ data.victims | length }}</span
+        >
+      </div>
+      <div class="card-body p-0">
+        {# Usunięcie paddingu body karty #} {% if data.victims %}
+        <div class="table-responsive">
+          {# Tabela ofiar - dopracowane style #}
+          <table class="table table-sm table-hover mb-0">
+            {# Usunięto striped, dodano hover #}
+            <thead>
+              <tr>
+                <th>Nazwa</th>
+                <th>Rola</th>
+                <th>Strona</th>
+                <th class="text-center">Lvl</th>
+                <th>Broń</th>
+                <th class="text-end">Dystans</th>
+                <th>Część ciała</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for victim in data.victims | sort(attribute='Name') %}
+              <tr>
+                <td class="fw-medium">{{ victim.Name }}</td>
+                {# Pogrubiona nazwa #}
+                <td>{{ victim.RoleTranslated }}</td>
+                <td>{{ victim.SideTranslated }}</td>
+                <td class="text-center">{{ victim.Level }}</td>
+                <td>
+                  <small class="text-muted">{{ victim.WeaponName }}</small>
+                </td>
+                {# Przygaszona nazwa broni #}
+                <td class="text-end">{{ victim.DistanceFormatted }}</td>
+                <td>{{ victim.BodyPartTranslated }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p class="text-muted p-3 mb-0 fst-italic">
+          Brak zarejestrowanych ofiar w tym rajdzie.
+        </p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {# Koniec lewej kolumny #}
+
+  <div class="col-lg-5">
+    {# Prawa kolumna #} {# --- Stan końcowy (Zdrowie i Witalność) --- #}
+    <div class="card mb-4 card-reveal">
+      <div class="card-header">Stan końcowy</div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6 mb-3 mb-md-0">
+            <h6 class="mb-2">Zdrowie</h6>
+            {# Użycie h6 dla podsekcji #} {% if data.final_health %}
+            <ul class="list-key-value small no-margin">
+              {# Dodano no-margin #} {% for part, health in
+              data.final_health.items()|sort %}
+              <li>
+                <span class="key">{{ part }}:</span>
+                <span class="value"
+                  >{{ health.current }} / {{ health.maximum }}</span
+                >
+              </li>
+              {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-muted small mt-1 fst-italic">Brak danych.</p>
+            {% endif %}
+          </div>
+          <div class="col-md-6">
+            <h6 class="mb-2">Witalność</h6>
+            {% if data.final_vitals %}
+            <ul class="list-key-value small no-margin">
+              <li>
+                <span class="key">Energia:</span>
+                <span class="value"
+                  >{{ data.final_vitals.Energy }} / {{
+                  data.final_vitals.MaxEnergy }}</span
+                >
+              </li>
+              <li>
+                <span class="key">Nawodnienie:</span>
+                <span class="value"
+                  >{{ data.final_vitals.Hydration }} / {{
+                  data.final_vitals.MaxHydration }}</span
+                >
+              </li>
+              <li>
+                <span class="key">Temperatura:</span>
+                <span class="value">{{ data.final_vitals.Temperature }}°C</span>
+              </li>
+            </ul>
+            {% else %}
+            <p class="text-muted small mt-1 fst-italic">Brak danych.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# --- Postęp umiejętności --- #}
+    <div class="card mb-4 card-reveal">
+      <div class="card-header">Postęp umiejętności</div>
+      <div class="card-body p-0">
+        {% if data.skills_changed %}
+        <div class="table-responsive">
+          <table class="table table-sm table-hover mb-0">
+            {# Usunięto striped, dodano hover #}
+            <thead>
+              <tr>
+                <th>Umiejętność</th>
+                <th class="text-end">Zdobyte</th>
+                <th class="text-end">Postęp</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for skill in data.skills_changed %}
+              <tr>
+                <td>{{ skill.SkillName }}</td>
+                <td class="text-end">
+                  <span class="text-success"
+                    >+{{ skill.PointsEarnedFormatted }}</span
+                  >
+                </td>
+                {# Zielony kolor dla zdobytych #}
+                <td class="text-end">{{ skill.ProgressFormatted }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p class="text-muted p-3 mb-0 fst-italic">
+          Brak postępu umiejętności w tej sesji.
+        </p>
+        {% endif %}
+      </div>
+    </div>
+
+    {# --- Statystyki ogólne (po rajdzie) --- #} {% if data.overall_stats %}
+    <div class="card mb-4 card-reveal">
+      <div class="card-header">
+        Statystyki ogólne
+        <small class="text-muted fw-normal">(po rajdzie)</small>
+      </div>
+      {# Dodano opis #}
+      <div class="card-body">
+        <ul class="list-key-value row no-margin">
+          <li class="col-sm-6">
+            <span class="key">Sesje:</span>
+            <span class="value">{{ data.overall_stats.sessions }}</span>
+          </li>
+          <li class="col-sm-6">
+            <span class="key">Kille:</span>
+            <span class="value">{{ data.overall_stats.kills }}</span>
+          </li>
+          <li class="col-sm-6">
+            <span class="key">Przeżyte:</span>
+            <span class="value"
+              >{{ data.overall_stats.survived_sessions }} ({{
+              data.overall_stats.survival_rate }})</span
+            >
+          </li>
+          <li class="col-sm-6">
+            <span class="key">Śmierci:</span>
+            <span class="value"
+              >{{ data.overall_stats.deaths }} ({{ data.overall_stats.kd_ratio
+              }})</span
+            >
+          </li>
+        </ul>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  {# Koniec prawej kolumny #}
+</div>
+{# Koniec .row dla statystyk/zdrowia #} {# --- Przedmioty --- #}
+<h3 class="mt-4 mb-3">Przedmioty</h3>
+<div class="row">
+  {# Bardziej zwarty wygląd kart przedmiotów #} {% set item_card_class =
+  "col-md-6 col-lg-3 mb-3" %}
+  <div class="{{ item_card_class }}">
+    <div class="card card-reveal h-100">
+      <div class="card-header small fw-medium">
+        Zabrane <small class="text-muted fw-normal">(Transfer)</small>
+      </div>
+      <div class="card-body pt-2 pb-2">
+        {# Zmniejszony padding pionowy #} {% if data.transfer_items %}
+        <ul class="list-unstyled small mb-0 item-list">
+          {% for item in data.transfer_items %}
+          <li>
+            {{ item.name }} <span class="item-count">x{{ item.count }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted mb-0 small fst-italic">Brak</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="{{ item_card_class }}">
+    <div class="card card-reveal h-100">
+      <div class="card-header small fw-medium">
+        Znalezione <small class="text-muted fw-normal">(FiR)</small>
+      </div>
+      <div class="card-body pt-2 pb-2">
+        {% if data.found_in_raid_items %}
+        <ul class="list-unstyled small mb-0 item-list">
+          {% for item in data.found_in_raid_items %}
+          <li>
+            {{ item.name }} <span class="item-count">x{{ item.count }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted mb-0 small fst-italic">Brak</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="{{ item_card_class }}">
+    <div class="card card-reveal h-100">
+      <div class="card-header small fw-medium">
+        Stracone <small class="text-muted fw-normal">(Ubezp.)</small>
+      </div>
+      <div class="card-body pt-2 pb-2">
+        {% if data.lost_insured_items %}
+        <ul class="list-unstyled small mb-0 item-list">
+          {% for item in data.lost_insured_items %}
+          <li>
+            {{ item.name }} <span class="item-count">x{{ item.count }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted mb-0 small fst-italic">Brak</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="{{ item_card_class }}">
+    <div class="card card-reveal h-100">
+      <div class="card-header small fw-medium">
+        Questowe <small class="text-muted fw-normal">(Niesione)</small>
+      </div>
+      <div class="card-body pt-2 pb-2">
+        {% if data.carried_quest_items %}
+        <ul class="list-unstyled small mb-0 item-list">
+          {% for item in data.carried_quest_items %}
+          <li>
+            {{ item.name }} <span class="item-count">x{{ item.count }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted mb-0 small fst-italic">Brak</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{# Dodatkowy CSS dla listy przedmiotów (opcjonalnie w style.css) #}
+<style>
+  .item-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.2rem;
+  }
+  .item-list .item-count {
+    color: var(--text-muted-color);
+    font-size: 0.9em;
+    margin-left: 0.5em;
+    white-space: nowrap;
+  }
+</style>
+
+{% endif %} {# koniec if not error and data #} {% endblock %}

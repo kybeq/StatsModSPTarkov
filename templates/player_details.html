@@ -1,0 +1,114 @@
+{% extends "base.html" %} {% block title %}Gracz: {{ nickname }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+  {# Dodano flex-wrap #}
+  <h1 class="mb-2 mb-md-0 me-3">
+    <i class="bi bi-person-badge me-2 text-primary"></i>Gracz: {{ nickname }}
+  </h1>
+  {# Ikona gracza #}
+  <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left me-1"></i> Powrót do listy
+  </a>
+</div>
+
+<div class="card mb-4 card-reveal">
+  <div class="card-header">Podstawowe informacje</div>
+  <div class="card-body">
+    {# Użycie list-key-value dla spójności #}
+    <ul class="list-key-value row">
+      <li class="col-md-4">
+        <span class="key">Poziom:</span>
+        <span class="value"
+          ><span class="badge bg-info text-dark rounded-pill"
+            >{{ player_info.latest_level | default('?') }}</span
+          ></span
+        >
+      </li>
+      <li class="col-md-4">
+        <span class="key">Strona:</span>
+        <span class="value">{{ player_info.latest_side | default('?') }}</span>
+      </li>
+      <li class="col-md-4">
+        <span class="key">Rajdy:</span>
+        <span class="value">{{ player_info.raid_count }}</span>
+      </li>
+    </ul>
+    <!-- TODO: Agregowane statystyki -->
+  </div>
+</div>
+
+<h3 class="mb-3">Ostatnie rajdy ({{ raids | length }})</h3>
+{# Mniejszy margines pod h3 #} {% if raids %}
+<div class="table-container card-reveal">
+  {# Użycie table-container #}
+  <table class="table table-striped table-hover table-sm mb-0">
+    {# Usunięto table-bordered #}
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Mapa</th>
+        <th>Wynik</th>
+        <th class="text-center">Czas</th>
+        <th class="text-center">Kille</th>
+        {# Skrócono #}
+        <th class="text-end">XP</th>
+        {# Skrócono #}
+        <th class="text-center">Akcje</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for raid in raids %} {# Klasa wiersza dla tła #} {% set row_class = ''
+      %} {% if raid.result == 'Killed' %} {% set row_class = 'table-danger' %}
+      {% elif raid.result in ['Survived', 'Runner', 'Left'] %} {% set row_class
+      = 'table-success' %} {% elif raid.result in ['MissingInAction',
+      'NotSurvive'] %} {% set row_class = 'table-warning' %} {% endif %} {#
+      Klasa tekstu dla wyniku #} {% set result_class = 'text-status-warning' %}
+      {% if raid.result == 'Killed' %} {% set result_class =
+      'text-status-danger' %} {% elif raid.result in ['Survived', 'Runner',
+      'Left'] %} {% set result_class = 'text-status-success' %} {% endif %}
+
+      <tr class="{{ row_class }}">
+        <td>
+          <small class="text-muted"
+            >{{ raid.timestamp.strftime('%y-%m-%d %H:%M') if raid.timestamp else
+            '?' }}</small
+          >
+        </td>
+        {# Krótszy format daty #}
+        <td>{{ raid.location | default('?') }}</td>
+        <td>
+          <span class="{{ result_class }}"
+            >{{ raid.result | default('?') }}</span
+          >
+        </td>
+        {# Użycie klasy tekstowej #}
+        <td class="text-center">
+          {{ raid.play_time_formatted | default('N/A') }}
+        </td>
+        <td class="text-center">{{ raid.kills | default('0') }}</td>
+        <td class="text-end">
+          {{ "{:,}".format(raid.exp | default('0') | int).replace(",", " ") }}
+        </td>
+        <td class="text-center">
+          <a
+            href="{{ url_for('raid_details', filename=raid.filename) }}"
+            class="btn btn-outline-primary btn-sm btn-icon-only"
+            title="Szczegóły rajdu"
+          >
+            {# btn-icon-only dla małego przycisku #}
+            <i class="bi bi-search"></i>
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{# Koniec .table-container #} {% else %}
+<div class="alert alert-secondary d-flex align-items-start" role="alert">
+  <i class="alert-icon bi bi-folder-x"></i>
+  <div class="alert-content ms-3">
+    Brak zarejestrowanych rajdów dla tego gracza.
+  </div>
+</div>
+{% endif %} {% endblock %}
