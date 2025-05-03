@@ -1,1108 +1,144 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
-
-/* ==========================================================================
-   1. CSS Variables & Base Setup - Light Theme Defaults
-   ========================================================================== */
-:root,
-[data-bs-theme="light"] {
-          /* -- Fonts -- */
-          --font-family-sans-serif: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
-          --font-family-monospace: Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-          --font-weight-light: 300;
-          --font-weight-normal: 400;
-          --font-weight-medium: 500;
-          --font-weight-semibold: 600;
-          --font-weight-bold: 700;
-
-          /* -- Base Colors - Light -- */
-          --primary-color: #0066cc;
-          /* Nieco ciemniejszy, bardziej stonowany niebieski */
-          --primary-rgb: 0, 102, 204;
-          --secondary-color: #5a6673;
-          /* Zdefiniowany szary dla tekstu drugorzędnego */
-          --secondary-rgb: 90, 102, 115;
-          --accent-color: #d97706;
-          /* Ciemniejszy pomarańczowy/bursztynowy */
-          --accent-rgb: 217, 119, 6;
-
-          /* -- Backgrounds & Surfaces - Light -- */
-          --body-bg: #f8f9fc;
-          /* Bardzo jasny, prawie biały */
-          --surface-bg: #ffffff;
-          /* Czysta biel dla kart, tabel itp. */
-          --surface-alt-bg: #f8f9fa;
-          /* Lekko szare tło dla pasków tabeli, nagłówków */
-          --navbar-bg: rgba(255, 255, 255, 0.85);
-          --footer-bg: #f1f3f5;
-
-          /* -- Text Colors - Light -- */
-          --body-color: #343a40;
-          /* Główny kolor tekstu */
-          --heading-color: #1d2125;
-          /* Ciemniejszy dla nagłówków */
-          --text-muted-color: var(--secondary-color);
-          --link-color: var(--primary-color);
-          --link-hover-color: darken(var(--primary-color), 10%);
-          --code-color: var(--accent-color);
-          --placeholder-color: #a0aec0;
-          /* Kolor dla placeholderów */
-
-          /* -- Borders - Light -- */
-          --border-color: #e9ecef;
-          /* Jaśniejsza, bardziej subtelna ramka */
-          --border-color-translucent: rgba(0, 0, 0, 0.06);
-          /* Bardziej przezroczysta */
-          --border-width: 1px;
-          --border-width-lg: 2px;
-          /* Grubsza ramka dla nagłówków tabel itp. */
-
-          /* -- Radii & Shadows - Light -- */
-          --border-radius: 0.6rem;
-          /* Zwiększony, bardziej miękki radius */
-          --border-radius-sm: 0.3rem;
-          --border-radius-lg: 0.8rem;
-          --box-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.05);
-          --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.04), 0 6px 12px rgba(0, 0, 0, 0.06);
-          --box-shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.05), 0 15px 30px rgba(0, 0, 0, 0.07);
-          --box-shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.04);
-
-          /* -- Spacing -- */
-          --spacing-xxs: 0.25rem;
-          /* 4px */
-          --spacing-xs: 0.5rem;
-          /* 8px */
-          --spacing-sm: 0.75rem;
-          /* 12px */
-          --spacing-base: 1rem;
-          /* 16px */
-          --spacing-md: 1.25rem;
-          /* 20px */
-          --spacing-lg: 1.5rem;
-          /* 24px */
-          --spacing-xl: 2rem;
-          /* 32px */
-          --spacing-xxl: 3rem;
-          /* 48px */
-
-          /* -- Transitions -- */
-          --transition-base: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-          --transition-fast: all 0.15s ease-out;
-          --transition-color: background-color var(--transition-base), border-color var(--transition-base), color var(--transition-base), fill var(--transition-base), stroke var(--transition-base);
-          --transition-shadow: box-shadow var(--transition-base), transform var(--transition-base);
-
-          /* -- Status Colors - Light (Refined backgrounds) -- */
-          --color-success: #198754;
-          --color-success-bg: #d1e7dd;
-          --color-success-text: #0f5132;
-          --color-danger: #dc3545;
-          --color-danger-bg: #dc3545;
-          --color-danger-text: #842029;
-          --color-warning: #ffc107;
-          --color-warning-bg: #fff3cd;
-          --color-warning-text: #664d03;
-          --color-info: #0dcaf0;
-          --color-info-bg: #cff4fc;
-          --color-info-text: #055160;
-
-          --primary-accent-width: 4px;
+@font-face {
+   font-family: 'Bender';
+   src: url('/static/fonts/bender/Jovanny Lemonad - Bender.otf') format('opentype');
+   font-weight: normal;
+   font-style: normal;
 }
 
-/* ==========================================================================
-   1b. Dark Theme Variables
-   ========================================================================== */
-[data-bs-theme="dark"] {
-          /* -- Fonts (same weights) -- */
-
-          /* -- Base Colors - Dark -- */
-          --primary-color: #3391ff;
-          /* Jaśniejszy, bardziej nasycony niebieski */
-          --primary-rgb: 51, 145, 255;
-          --secondary-color: #909dab;
-          /* Jaśniejszy szary dla tekstu drugorzędnego */
-          --secondary-rgb: 144, 157, 171;
-          --accent-color: #f59e0b;
-          /* Jaśniejszy bursztynowy */
-          --accent-rgb: 245, 158, 11;
-
-          /* -- Backgrounds & Surfaces - Dark -- */
-          --body-bg: #121212;
-          /* Głęboka czerń/ciemny szary */
-          --surface-bg: #1e1e1e;
-          /* Tło kart, tabel */
-          --surface-alt-bg: #2a2a2a;
-          /* Tło pasków tabeli, nagłówków */
-          --navbar-bg: rgba(28, 28, 30, 0.88);
-          /* Ciemniejszy, bardziej kryjący */
-          --footer-bg: #161616;
-
-          /* -- Text Colors - Dark -- */
-          --body-color: #e4e6eb;
-          /* Jasny szary dla tekstu */
-          --heading-color: #ffffff;
-          /* Czysta biel */
-          --text-muted-color: var(--secondary-color);
-          --link-color: var(--primary-color);
-          --link-hover-color: lighten(var(--primary-color), 10%);
-          --code-color: var(--accent-color);
-          --placeholder-color: #718096;
-
-          /* -- Borders - Dark -- */
-          --border-color: #3a3b3d;
-          /* Subtelna ciemna ramka */
-          --border-color-translucent: rgba(255, 255, 255, 0.08);
-          /* Jasna przezroczysta */
-
-          /* -- Radii & Shadows - Dark (Shadows are less prominent) -- */
-          --box-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.15);
-          --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-          --box-shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.25);
-          --box-shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.25);
-
-          /* -- Status Colors - Dark (More vibrant) -- */
-          --color-success: #4ade80;
-          --color-success-bg: rgba(74, 222, 128, 0.1);
-          --color-success-text: #4ade80;
-          --color-danger: #f87171;
-          --color-danger-bg: rgba(248, 113, 113, 0.1);
-          --color-danger-text: #f87171;
-          --color-warning: #facc15;
-          --color-warning-bg: rgba(250, 204, 21, 0.1);
-          --color-warning-text: #facc15;
-          --color-info: #60a5fa;
-          --color-info-bg: rgba(96, 165, 250, 0.1);
-          --color-info-text: #60a5fa;
+@font-face {
+   font-family: 'Bender';
+   src: url('/static/fonts/bender/Jovanny Lemonad - Bender-Italic.otf') format('opentype');
+   font-weight: normal;
+   font-style: italic;
 }
 
-/* ==========================================================================
-   2. Base & Layout Styles - Polished
-   ========================================================================== */
-html {
-          scroll-behavior: smooth;
-          font-size: 16px;
-          /* Base font size */
+@font-face {
+   font-family: 'Bender';
+   src: url('/static/fonts/bender/Jovanny Lemonad - Bender-Bold.otf') format('opentype');
+   font-weight: bold;
+   font-style: normal;
+}
+
+@font-face {
+   font-family: 'Bender';
+   src: url('/static/fonts/bender/Jovanny Lemonad - Bender-BoldItalic.otf') format('opentype');
+   font-weight: bold;
+   font-style: italic;
+}
+
+@font-face {
+   font-family: 'Bender';
+   src: url('/static/fonts/bender/Jovanny Lemonad - Bender-Light.otf') format('opentype');
+   font-weight: 300;
+   font-style: normal;
+}
+
+@font-face {
+   font-family: 'Bender';
+   src: url('/static/fonts/bender/Jovanny Lemonad - Bender-LightItalic.otf') format('opentype');
+   font-weight: 300;
+   font-style: italic;
+}
+
+@font-face {
+   font-family: 'Bender';
+   src: url('/static/fonts/bender/Jovanny Lemonad - Bender-Black.otf') format('opentype');
+   font-weight: 900;
+   font-style: normal;
+}
+
+@font-face {
+   font-family: 'Bender';
+   src: url('/static/fonts/bender/Jovanny Lemonad - Bender-BlackItalic.otf') format('opentype');
+   font-weight: 900;
+   font-style: italic;
 }
 
 body {
-          padding-top: calc(70px + var(--spacing-sm));
-          /* Navbar height + extra space */
-          padding-bottom: var(--spacing-xxl);
-          /* More space at the bottom */
-          background-color: var(--body-bg);
-          font-family: var(--font-family-sans-serif);
-          font-weight: var(--font-weight-normal);
-          color: var(--body-color);
-          line-height: 1.65;
-          /* Increased line height */
-          -webkit-font-smoothing: antialiased;
-          -moz-osx-font-smoothing: grayscale;
-          transition: var(--transition-color);
+   font-family: 'Bender', sans-serif;
+   font-size: 18px;
+   font-weight: 600;
 }
 
-.container {
-          max-width: 1360px;
-          /* Slightly wider */
-          padding-left: var(--spacing-lg);
-          padding-right: var(--spacing-lg);
+main {
+   padding: 2em;
 }
 
-/* Helper for consistent vertical spacing */
-.section-spacer {
-          margin-bottom: var(--spacing-xl);
-}
-
-@media (min-width: 992px) {
-          .section-spacer {
-                    margin-bottom: var(--spacing-xxl);
-          }
-}
-
-
-/* ==========================================================================
-   3. Typography & Headers - Refined
-   ========================================================================== */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-          margin-top: 0;
-          margin-bottom: var(--spacing-base);
-          /* Consistent base margin */
-          font-family: var(--font-family-sans-serif);
-          font-weight: var(--font-weight-bold);
-          /* Bold headers */
-          line-height: 1.3;
-          color: var(--heading-color);
-          letter-spacing: -0.03em;
-          /* More noticeable kerning */
-          transition: color var(--transition-base);
-}
-
-/* Adjust margins for tighter spacing after headers */
-h1+*,
-h2+*,
-h3+*,
-h4+*,
-h5+*,
-h6+* {
-          margin-top: var(--spacing-sm);
-}
-
-/* Specific header adjustments */
 h1 {
-          font-size: calc(1.45rem + 2vw);
-          margin-bottom: var(--spacing-lg);
+   font-family: 'Bender', sans-serif;
+   font-weight: 900;
 }
 
-@media (min-width: 1200px) {
-          h1 {
-                    font-size: 3rem;
-          }
+/* Hero Section */
+.hero-section {
+   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+   border-radius: 0.5rem;
 }
 
-h2 {
-          font-size: calc(1.35rem + 1.2vw);
-          margin-bottom: var(--spacing-md);
+[data-bs-theme="dark"] .hero-section {
+   background: linear-gradient(135deg, #343a40 0%, #495057 100%);
 }
 
-@media (min-width: 1200px) {
-          h2 {
-                    font-size: 2.4rem;
-          }
+/* Animacje */
+.animate-fade-in {
+   animation: fadeIn 0.5s ease-in;
 }
 
-h3 {
-          font-size: calc(1.25rem + .6vw);
-          margin-bottom: var(--spacing-base);
+@keyframes fadeIn {
+   from {
+      opacity: 0;
+      transform: translateY(10px);
+   }
+
+   to {
+      opacity: 1;
+      transform: translateY(0);
+   }
 }
 
-@media (min-width: 1200px) {
-          h3 {
-                    font-size: 1.8rem;
-          }
-}
-
-h4 {
-          font-size: 1.2rem;
-          font-weight: var(--font-weight-semibold);
-          margin-bottom: var(--spacing-sm);
-}
-
-h5 {
-          font-size: 1rem;
-          font-weight: var(--font-weight-semibold);
-          margin-bottom: var(--spacing-xs);
-}
-
-h6 {
-          font-size: 0.9rem;
-          font-weight: var(--font-weight-semibold);
-          color: var(--text-muted-color);
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          margin-bottom: var(--spacing-xs);
-}
-
-p {
-          margin-bottom: var(--spacing-base);
-          max-width: 75ch;
-          /* Optimal line length */
-}
-
-p.lead {
-          font-size: 1.15rem;
-          font-weight: var(--font-weight-light);
-          margin-bottom: var(--spacing-lg);
-}
-
-code {
-          font-size: 0.9em;
-          color: var(--code-color);
-          background-color: var(--code-bg);
-          padding: var(--spacing-xxs) var(--spacing-xs);
-          border-radius: var(--border-radius-sm);
-          border: var(--border-width) solid var(--border-color-translucent);
-          font-family: var(--font-family-monospace);
-          transition: var(--transition-color), border-color var(--transition-base);
-}
-
-pre code {
-          padding: var(--spacing-base);
-          display: block;
-          overflow-x: auto;
-}
-
-/* Subtle horizontal rule */
-hr {
-          border: 0;
-          height: var(--border-width);
-          background-color: var(--border-color);
-          margin: var(--spacing-xl) 0;
-          transition: background-color var(--transition-base);
-}
-
-/* ==========================================================================
-   4. Navbar Styles - Polished Glass
-   ========================================================================== */
-.navbar-glass {
-          background-color: var(--navbar-bg);
-          backdrop-filter: saturate(180%) blur(15px);
-          /* Slightly more blur */
-          -webkit-backdrop-filter: saturate(180%) blur(15px);
-          border-bottom: var(--border-width) solid var(--navbar-border-color);
-          box-shadow: none;
-          padding-top: var(--spacing-sm);
-          padding-bottom: var(--spacing-sm);
-          transition: background-color var(--transition-base), border-color var(--transition-base);
-}
-
-.navbar-glass .navbar-brand {
-          color: var(--navbar-brand-color);
-          font-weight: var(--font-weight-bold);
-          transition: color var(--transition-fast), opacity var(--transition-fast);
-          font-size: 1.2rem;
-          display: flex;
-          /* Align icon and text */
-          align-items: center;
-}
-
-.navbar-glass .navbar-brand i {
-          font-size: 1.1em;
-          position: relative;
-          top: -1px;
-          /* Fine-tune icon alignment */
-}
-
-.navbar-glass .navbar-brand:hover {
-          opacity: 0.9;
-}
-
-.navbar-glass .nav-link {
-          color: var(--navbar-color);
-          font-weight: var(--font-weight-medium);
-          transition: color var(--transition-fast);
-          padding: var(--spacing-xs) var(--spacing-base);
-          border-radius: var(--border-radius-sm);
-}
-
-.navbar-glass .nav-link:hover,
-.navbar-glass .nav-link.active {
-          color: var(--primary-color);
-          background-color: rgba(var(--primary-rgb), 0.08);
-          /* Subtle background on hover/active */
-}
-
-.navbar-toggler {
-          border: none;
-          padding: var(--spacing-xs);
-}
-
-.navbar-toggler:focus {
-          box-shadow: none;
-}
-
-.navbar-toggler-icon {
-          background-image: none;
-          /* Remove default icon */
-          position: relative;
-          height: 2px;
-          width: 22px;
-          background-color: currentColor;
-          /* Use text color for bars */
-          display: block;
-          border-radius: 1px;
-          transition: var(--transition-base);
-}
-
-.navbar-toggler-icon::before,
-.navbar-toggler-icon::after {
-          content: '';
-          position: absolute;
-          left: 0;
-          height: 2px;
-          width: 22px;
-          background-color: currentColor;
-          border-radius: 1px;
-          transition: var(--transition-base);
-}
-
-.navbar-toggler-icon::before {
-          top: -7px;
-}
-
-.navbar-toggler-icon::after {
-          top: 7px;
-}
-
-/* Add animation for toggler icon (X shape) if needed */
-
-/* Theme Toggle Button */
-.theme-toggle {
-          border-radius: 50%;
-          width: 40px;
-          height: 40px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 0;
-          line-height: 1;
-          background-color: transparent;
-          border: var(--border-width) solid var(--border-color-translucent);
-          color: var(--text-muted-color);
-          transition: var(--transition-color), transform var(--transition-fast), border-color var(--transition-base);
-}
-
-.theme-toggle:hover {
-          color: var(--primary-color);
-          border-color: rgba(var(--primary-rgb), 0.3);
-          background-color: rgba(var(--primary-rgb), 0.05);
-          transform: scale(1.05);
-}
-
-.theme-toggle i {
-          font-size: 1.2rem;
-          transition: transform 0.3s ease;
-}
-
-.theme-toggle:hover i {
-          transform: rotate(20deg) scale(1.1);
-}
-
-[data-bs-theme="dark"] .theme-icon-light {
-          display: none;
-}
-
-[data-bs-theme="light"] .theme-icon-dark {
-          display: none;
-}
-
-/* ==========================================================================
-   5. Card Styles - Elevated
-   ========================================================================== */
+/* Karty */
 .card {
-          margin-bottom: var(--spacing-lg);
-          border: none;
-          /* Remove border, rely on shadow and background */
-          box-shadow: var(--box-shadow);
-          border-radius: var(--border-radius-lg);
-          /* Larger radius */
-          background-color: var(--surface-bg);
-          transition: var(--transition-shadow), background-color var(--transition-base);
-          overflow: hidden;
-          /* Clip content to rounded corners */
+   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .card:hover {
-          transform: translateY(-5px);
-          box-shadow: var(--box-shadow-lg);
+   transform: translateY(-5px);
+   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
-.card-header {
-          font-weight: var(--font-weight-semibold);
-          /* Semibold header */
-          background-color: var(--surface-alt-bg);
-          /* Use alternate background */
-          border-bottom: var(--border-width) solid var(--border-color);
-          padding: var(--spacing-base) var(--spacing-lg);
-          color: var(--heading-color);
-          border-top-left-radius: inherit;
-          border-top-right-radius: inherit;
-          transition: var(--transition-color), border-color var(--transition-base);
+[data-bs-theme="dark"] .card {
+   background-color: var(--bs-gray-800);
 }
 
-.card-body {
-          padding: var(--spacing-lg);
+/* Nawigacja */
+.navbar-nav .nav-link {
+   transition: color 0.3s ease;
 }
 
-.card-footer {
-          background-color: var(--surface-alt-bg);
-          border-top: var(--border-width) solid var(--border-color);
-          padding: var(--spacing-base) var(--spacing-lg);
-          border-bottom-left-radius: inherit;
-          border-bottom-right-radius: inherit;
-          transition: var(--transition-color), border-color var(--transition-base);
+.navbar-nav .nav-link:hover {
+   color: var(--bs-primary);
 }
 
-/* Card Title specific styling */
-.card-title {
-          /* Assuming h5 in Bootstrap cards */
-          font-size: 1.25rem;
-          font-weight: var(--font-weight-semibold);
-          margin-bottom: var(--spacing-xs);
+[data-bs-theme="dark"] .navbar-nav .nav-link.active {
+   color: var(--bs-primary);
 }
 
-/* --- Style Kart Wyników Rajdu (Subtelny akcent) --- */
-.card.raid-result-Survived,
-.card.raid-result-Runner,
-.card.raid-result-Left,
-.card.raid-result-Killed,
-.card.raid-result-MissingInAction,
-.card.raid-result-NotSurvive {
-          /* Instead of border, use a subtle background tint or icon */
-}
-
-.card .raid-status-icon {
-          /* Add <span class="raid-status-icon">...</span> in header */
-          display: inline-block;
-          width: 10px;
-          height: 10px;
-          border-radius: 50%;
-          margin-right: var(--spacing-xs);
-          vertical-align: middle;
-}
-
-.card.raid-result-Survived .raid-status-icon,
-.card.raid-result-Runner .raid-status-icon,
-.card.raid-result-Left .raid-status-icon {
-          background-color: var(--color-success);
-}
-
-.card.raid-result-Killed .raid-status-icon {
-          background-color: var(--color-danger);
-}
-
-.card.raid-result-MissingInAction .raid-status-icon,
-.card.raid-result-NotSurvive .raid-status-icon {
-          background-color: var(--color-warning);
-}
-
-/* Color status text directly */
-.text-status-success {
-          color: var(--color-success);
-          font-weight: var(--font-weight-medium);
-}
-
-.text-status-danger {
-          color: var(--color-danger);
-          font-weight: var(--font-weight-medium);
-}
-
-.text-status-warning {
-          color: var(--color-warning);
-          font-weight: var(--font-weight-medium);
-}
-
-
-/* --- Karta zabójcy --- */
-.card.border-danger {
-          /* Keep border for this one for emphasis */
-          border: var(--border-width-lg) solid var(--color-danger) !important;
-          box-shadow: 0 0 25px rgba(var(--bs-danger-rgb), 0.2);
-}
-
-.card.border-danger .card-header {
-          background: var(--color-danger);
-          /* Solid color for dark/light */
-          color: #fff;
-          border-bottom: 0;
-          text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
-}
-
-.card.border-danger .card-header::before {
-          /* Icon styling unchanged */
-}
-
-/* Dodaj w sekcji Card Styles lub Utilities */
-.card-reveal {
-          opacity: 0;
-          transform: translateY(15px);
-          transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-          transition-delay: var(--animation-delay, 0ms);
-          /* Użyj zmiennej dla opóźnienia */
-}
-
-.card-reveal.revealed {
-          opacity: 1;
-          transform: translateY(0);
-}
-
-/* ==========================================================================
-   6. Table Styles - Premium
-   ========================================================================== */
-.table-container {
-          /* Wrapper */
-          border: var(--border-width) solid var(--border-color);
-          border-radius: var(--border-radius);
-          /* Match card radius */
-          overflow: hidden;
-          margin-bottom: var(--spacing-lg);
-          box-shadow: var(--box-shadow-sm);
-          transition: border-color var(--transition-base), box-shadow var(--transition-base);
-}
-
-.table-container:hover {
-          box-shadow: var(--box-shadow);
-}
-
-.table {
-          margin-bottom: 0;
-          border-collapse: separate;
-          /* Allows border-spacing */
-          border-spacing: 0;
-          /* Reset spacing */
-          background-color: var(--surface-bg);
-          transition: background-color var(--transition-base);
-}
-
-.table th,
-.table td {
-          vertical-align: middle;
-          padding: var(--spacing-base) var(--spacing-lg);
-          /* More horizontal padding */
-          border: none;
-          /* Remove all default borders */
-          border-bottom: var(--border-width) solid var(--border-color);
-          /* Only bottom border for rows */
-          line-height: 1.5;
-          transition: var(--transition-color), border-color var(--transition-base);
-}
-
-.table>tbody>tr:last-child>td {
-          border-bottom: none;
-}
-
-/* Remove border on last row */
-
-.table th {
-          font-weight: var(--font-weight-semibold);
-          color: var(--heading-color);
-          font-size: 0.85rem;
-          /* Smaller header text */
-          text-transform: uppercase;
-          letter-spacing: 0.06em;
-          white-space: nowrap;
-          /* Prevent header wrapping */
-          text-align: left;
-          /* Ensure left alignment */
-}
-
-.table>thead {
-          border-bottom: var(--border-width-lg) solid var(--border-color);
-}
-
-.table>thead th {
-          border-bottom: none;
-          background-color: var(--surface-alt-bg);
-}
-
-/* Zebra striping */
-.table-striped>tbody>tr:nth-of-type(odd)>* {
-          background-color: var(--surface-alt-bg);
-}
-
-/* Hover na wierszach */
-.table-hover>tbody>tr:hover>* {
-          background-color: rgba(var(--primary-rgb), 0.05);
-          color: var(--heading-color);
-}
-
-/* Kolorowanie wierszy (Używamy tylko tła dla subtelności) */
-tr.table-success>td {
-          background-color: var(--color-success-bg) !important;
-}
-
-tr.table-danger>td {
-          background-color: var(--color-danger-bg) !important;
-}
-
-tr.table-warning>td {
-          background-color: var(--color-warning-bg) !important;
-}
-
-/* Hover dla kolorowych wierszy */
-.table-hover>tbody>tr.table-success:hover>* {
-          background-color: mix(var(--color-success-bg), black, 90%) !important;
-}
-
-.table-hover>tbody>tr.table-danger:hover>* {
-          background-color: mix(var(--color-danger-bg), black, 90%) !important;
-}
-
-.table-hover>tbody>tr.table-warning:hover>* {
-          background-color: mix(var(--color-warning-bg), black, 90%) !important;
-}
-
-/* Note: mix() is SASS/LESS, using rgba for pure CSS */
-[data-bs-theme="light"] .table-hover>tbody>tr.table-success:hover>* {
-          background-color: rgba(var(--bs-success-rgb), 0.15) !important;
-}
-
-[data-bs-theme="light"] .table-hover>tbody>tr.table-danger:hover>* {
-          background-color: rgba(var(--bs-danger-rgb), 0.15) !important;
-}
-
-[data-bs-theme="light"] .table-hover>tbody>tr.table-warning:hover>* {
-          background-color: rgba(var(--bs-warning-rgb), 0.15) !important;
-}
-
-[data-bs-theme="dark"] .table-hover>tbody>tr.table-success:hover>* {
-          background-color: rgba(var(--bs-success-rgb), 0.25) !important;
-}
-
-[data-bs-theme="dark"] .table-hover>tbody>tr.table-danger:hover>* {
-          background-color: rgba(var(--bs-danger-rgb), 0.25) !important;
-}
-
-[data-bs-theme="dark"] .table-hover>tbody>tr.table-warning:hover>* {
-          background-color: rgba(var(--bs-warning-rgb), 0.25) !important;
-}
-
-
-/* ==========================================================================
-   7. Link Styles - Polished
-   ========================================================================== */
-a {
-          transition: var(--transition-fast);
-          color: var(--link-color);
-          text-decoration: none;
-          cursor: pointer;
-}
-
-a:hover {
-          color: var(--link-hover-color);
-          /* Optional: text-decoration: underline; */
-}
-
-a:focus-visible {
-          /* Improved focus state */
-          outline: 2px solid rgba(var(--primary-rgb), 0.5);
-          outline-offset: 2px;
-          border-radius: var(--border-radius-sm);
-}
-
-.player-link {
-          font-weight: var(--font-weight-semibold);
-          /* Pogrubiony link gracza */
-          /* text-decoration: underline; */
-          /* Można dodać podkreślenie dla wyróżnienia */
-          /* text-decoration-thickness: 1px; */
-          /* text-underline-offset: 2px; */
-}
-
-/* ==========================================================================
-   8. List Styles - Refined `.list-key-value`
-   ========================================================================== */
-.card-body ul:not(.list-unstyled):not(.list-key-value),
-.card-body ol:not(.list-unstyled) {
-          list-style: none;
-          padding-left: 0;
-          margin-bottom: 0;
-}
-
-.card-body ul:not(.list-unstyled):not(.list-key-value) li {
-          position: relative;
-          padding-left: 1.6em;
-          /* Slightly less padding */
-          margin-bottom: var(--spacing-xs);
-          /* Tighter spacing */
-          line-height: 1.6;
-}
-
-.card-body ul:not(.list-unstyled):not(.list-key-value) li::before {
-          content: '';
-          /* Use background-image or a different approach if needed */
-          position: absolute;
-          left: 0.5em;
-          top: 0.6em;
-          /* Adjust vertical alignment */
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background-color: var(--primary-color);
-          transition: background-color var(--transition-base);
-}
-
-/* Stylizacja list klucz-wartość - Final Polish */
-.list-key-value {
-          list-style: none;
-          padding-left: 0;
-          margin: var(--spacing-base) 0;
-}
-
-.list-key-value.no-margin {
-          margin: 0;
-}
-
-/* Helper class */
-
-.list-key-value li {
-          display: flex;
-          justify-content: space-between;
-          align-items: baseline;
-          padding: var(--spacing-xxs);
-          /* Reduced padding */
-          border-bottom: var(--border-width) solid var(--border-color-translucent);
-          /* Dashed separator */
-          transition: border-color var(--transition-base);
-}
-
-.list-key-value li:last-child {
-          border-bottom: 0;
-          padding-bottom: 0;
-}
-
-.list-key-value li:first-child {
-          padding-top: 0;
-}
-
-.list-key-value .key {
-          /* Use <span class="key">...</span> */
-          color: var(--text-muted-color);
-          font-size: 0.9rem;
-          padding-right: var(--spacing-base);
-          flex-shrink: 0;
-          transition: color var(--transition-base);
-}
-
-.list-key-value .value {
-          /* Use <span class="value">...</span> */
-          font-weight: var(--font-weight-medium);
-          text-align: right;
-          color: var(--body-color);
-          transition: color var(--transition-base);
-          word-break: break-word;
-          /* Prevent long values overflowing */
-}
-
-.list-key-value .value-success {
-          color: var(--color-success) !important;
-          font-weight: var(--font-weight-semibold);
-}
-
-.list-key-value .value-danger {
-          color: var(--color-danger) !important;
-          font-weight: var(--font-weight-semibold);
-}
-
-.list-key-value .value-warning {
-          color: var(--color-warning) !important;
-          font-weight: var(--font-weight-semibold);
-}
-
-/* ==========================================================================
-   9. Alert & Error Styles - Refined
-   ========================================================================== */
-.alert {
-          border-width: 0;
-          border-left-width: var(--primary-accent-width);
-          border-radius: var(--border-radius);
-          /* Match card radius */
-          box-shadow: var(--box-shadow-sm);
-          padding: var(--spacing-base) var(--spacing-lg);
-          margin-bottom: var(--spacing-lg);
-          /* Consistent spacing */
-          display: flex;
-          /* Align icon and text */
-          align-items: flex-start;
-}
-
-.alert .alert-icon {
-          /* Add <i class="alert-icon bi bi-..."></i> */
-          font-size: 1.3rem;
-          margin-right: var(--spacing-base);
-          line-height: 1.4;
-          flex-shrink: 0;
-}
-
-.alert .alert-content {
-          flex-grow: 1;
-}
-
-.alert .alert-heading {
-          font-weight: var(--font-weight-semibold);
-          margin-bottom: var(--spacing-xs);
-          font-size: 1.1rem;
-}
-
-.alert ul {
-          list-style: none;
-          padding-left: 0;
-          margin: var(--spacing-sm) 0 0 0;
-}
-
-.alert li {
-          margin-bottom: var(--spacing-xs);
-}
-
-.alert-danger {
-          border-left-color: var(--color-danger);
-          background-color: var(--color-danger-bg);
-          color: var(--color-danger-text);
-}
-
-.alert-danger .alert-icon {
-          color: var(--color-danger);
-}
-
-.alert-danger .alert-link {
-          color: darken(var(--color-danger-text), 15%);
-          font-weight: var(--font-weight-semibold);
-}
-
-.alert-info {
-          border-left-color: var(--color-info);
-          background-color: var(--color-info-bg);
-          color: var(--color-info-text);
-}
-
-.alert-info .alert-icon {
-          color: var(--color-info);
-}
-
-
-/* ==========================================================================
-   10. Button Styles - Premium Feel
-   ========================================================================== */
-.btn {
-          display: inline-flex;
-          /* Align icon and text */
-          align-items: center;
-          justify-content: center;
-          border-radius: var(--border-radius);
-          padding: 0.7rem 1.4rem;
-          /* Generous padding */
-          font-size: 0.95rem;
-          /* Slightly larger base font */
-          font-weight: var(--font-weight-semibold);
-          /* Semibold */
-          line-height: 1.5;
-          text-align: center;
-          vertical-align: middle;
-          cursor: pointer;
-          user-select: none;
-          border: var(--border-width) solid transparent;
-          /* Base border */
-          transition: var(--transition-base);
-          box-shadow: var(--box-shadow-sm);
-}
-
-.btn i {
-          margin-right: var(--spacing-xs);
-          font-size: 1.1em;
-          vertical-align: middle;
-}
-
-.btn.btn-icon-only {
-          padding: 0.7rem;
-          line-height: 1;
-}
-
-/* For buttons with only an icon */
-.btn.btn-icon-only i {
-          margin-right: 0;
-}
-
-.btn:hover {
-          transform: translateY(-2px);
-          box-shadow: var(--box-shadow);
-}
-
-.btn:active {
-          transform: translateY(0px);
-          box-shadow: var(--box-shadow-inset);
-}
-
-.btn:focus-visible {
-          /* Improved focus state */
-          outline: 2px solid rgba(var(--primary-rgb), 0.5);
-          outline-offset: 2px;
-          box-shadow: var(--box-shadow);
-          /* Maintain shadow on focus */
-}
-
-/* Primary Button */
+/* Przyciski */
 .btn-primary {
-          background-color: var(--primary-color);
-          color: #fff;
-          border-color: var(--primary-color);
+   transition: background-color 0.3s ease;
 }
 
 .btn-primary:hover {
-          background-color: darken(var(--primary-color), 8%);
-          border-color: darken(var(--primary-color), 8%);
+   background-color: var(--bs-primary-dark);
 }
 
-/* Secondary (Outline) Button */
-.btn-outline-secondary {
-          border-color: var(--border-color);
-          color: var(--secondary-color);
-          background-color: transparent;
-          box-shadow: none;
-}
+/* Responsywność */
+@media (max-width: 768px) {
+   .hero-section {
+      padding: 3rem 1rem;
+   }
 
-.btn-outline-secondary:hover {
-          background-color: var(--secondary-color);
-          color: var(--surface-bg);
-          /* Use surface background for text color */
-          border-color: var(--secondary-color);
-          box-shadow: var(--box-shadow-sm);
-}
-
-[data-bs-theme="dark"] .btn-outline-secondary:hover {
-          color: var(--body-bg);
-          /* Ensure contrast in dark mode */
-}
-
-/* Small Button */
-.btn-sm {
-          padding: 0.5rem 1rem;
-          font-size: 0.85rem;
-          border-radius: var(--border-radius-sm);
-}
-
-.btn-sm i {
-          font-size: 1em;
-}
-
-
-/* ==========================================================================
-   11. Footer Styles - Subtle
-   ========================================================================== */
-.main-footer {
-          margin-top: var(--spacing-xxl);
-          padding: var(--spacing-xl) 0;
-          text-align: center;
-          color: var(--text-muted-color);
-          border-top: var(--border-width) solid var(--border-color);
-          font-size: 0.9em;
-          background-color: var(--footer-bg);
-          transition: var(--transition-color), border-color var(--transition-base);
-}
-
-.main-footer p {
-          margin-bottom: 0;
-}
-
-/* ==========================================================================
-   12. Utilities & Overrides
-   ========================================================================== */
-.text-muted {
-          color: var(--text-muted-color) !important;
-}
-
-.small {
-          font-size: 0.875em;
-}
-
-/* Relative small size */
-.text-uppercase {
-          letter-spacing: 0.05em;
-          /* Add spacing to uppercase */
-}
-
-.fst-italic {
-          color: var(--text-muted-color);
-}
-
-/* Muted italics */
-.badge {
-          padding: 0.4em 0.7em;
-          font-size: 0.8em;
-          font-weight: var(--font-weight-semibold);
-}
-
-/* Custom badge padding */
-.rounded-pill {
-          border-radius: 50rem;
+   .card {
+      max-width: 100%;
+   }
 }
