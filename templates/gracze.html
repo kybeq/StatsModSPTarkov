@@ -1,0 +1,62 @@
+{% extends "base.html" %} {% block title %}Lista Graczy - StatsMods Tarkov{%
+endblock %} {% block content %}
+<section>
+  <div class="row g-5">
+    <div class="col-md-12 col-sm-12">
+      <h1 class="mb-5">Ranking Graczy</h1>
+      {% if players_list %}
+      <div class="table-responsive">
+        <table
+          class="table table-striped-columns table-hover text-center align-middle"
+        >
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Nick</th>
+              <th scope="col">Lvl</th>
+              <th scope="col">Frakcja</th>
+              <th scope="col">Rajdy</th>
+              <th scope="col">Przeżyte</th>
+              <th scope="col">Śmierci</th>
+              <th scope="col">Kille</th>
+              <th scope="col">Total Exp</th>
+              <th scope="col">Headshoty</th>
+              <th scope="col">K/D</th>
+              <th scope="col">Profil</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for player in players_list %}
+            <tr>
+              <th scope="row">{{ loop.index }}</th>
+              <td>{{ player.nickname }}</td>
+              <td>{{ player.latest_level or 'N/A' }}</td>
+              <td>{{ player.side_translated }}</td>
+              {# Już przetłumaczone w app.py #}
+              <td>{{ player.raid_count }}</td>
+              <td>{{ player.total_survived }}</td>
+              <td>{{ player.total_deaths }}</td>
+              <td>{{ player.total_kills }}</td>
+              <td>{{ player.latest_total_experience_formatted }}</td>
+              {# Sformatowane w app.py #}
+              <td>{{ player.total_headshots }}</td>
+              <td>{{ player.calculated_kd }}</td>
+              <td>
+                <a
+                  href="{{ url_for('player_details', nickname=player.nickname) }}"
+                  class="btn btn-secondary btn-sm"
+                  >zobacz</a
+                >
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p>Brak graczy do wyświetlenia.</p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

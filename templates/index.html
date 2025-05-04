@@ -1,129 +1,128 @@
-{% extends "base.html" %} {% block title %}Strona Główna - Analizator Rajdów{%
+{% extends "base.html" %} {% block title %}Strona Główna - StatsMods Tarkov{%
 endblock %} {% block content %}
-<!-- Sekcja powitalna (Hero) -->
-<section class="hero-section text-center py-5 mb-5">
-  <div class="container">
-    <h1 class="display-3 fw-bold">Witaj w Analizatorze Rajdów</h1>
-    <p class="lead text-muted">
-      Śledź swoje rajdy, analizuj wyniki i odkrywaj najlepszych graczy!
-    </p>
-    <a href="#raids" class="btn btn-primary btn-lg mt-3">
-      <i class="fas fa-flag-checkered me-2"></i>Zobacz ostatnie rajdy
-    </a>
-  </div>
-</section>
+<section>
+  <h1 class="text-body-emphasis">Witaj w StatsMods Tarkov</h1>
+  <p class="fs-5 col-md-8">Przeglądaj statystyki rajdów i graczy.</p>
 
-<!-- Sekcja błędów -->
-{% if errors %}
-<div class="container mb-5">
-  <div class="alert alert-danger" role="alert">
-    <h2>
-      <i class="fas fa-exclamation-triangle me-2"></i>Wystąpiły błędy podczas
-      ładowania danych:
-    </h2>
-    <ul>
-      {% for error in errors %}
-      <li>{{ error }}</li>
-      {% endfor %}
-    </ul>
-  </div>
-</div>
-{% endif %}
+  <hr class="col-3 col-md-12 my-5" />
 
-<!-- Sekcja ostatniego rajdu -->
-{% if latest_raid %}
-<section id="raids" class="container mb-5">
-  <h2 class="mb-4">
-    <i class="fas fa-flag-checkered me-2"></i>Ostatni zarejestrowany rajd
-  </h2>
-  <div class="card shadow-sm animate-fade-in">
-    <div class="row g-0">
-      <div class="col-md-6">
+  <div class="row g-5">
+    <div class="col-md-4 col-sm-12 border-end">
+      <h2 class="mb-4">Ostatni rajd</h2>
+      {% if latest_raid %}
+      <div class="card mb-3 shadow-lg">
+        {% if latest_raid.location %}
         <img
-          src="{{ url_for('static', filename='images/maps/factory.avif') }}"
-          class="img-fluid rounded-start"
-          alt="Ostatni rajd"
+          src="{{ url_for('static', filename=get_map_image_url(latest_raid.location)) }}"
+          class="card-img-top"
+          alt="{{ latest_raid.location }}"
         />
-      </div>
-      <div class="col-md-6">
+        {% else %}
+        <img
+          src="{{ url_for('static', filename=get_map_image_url('unknown')) }}"
+          class="card-img-top"
+          alt="Nieznana mapa"
+        />
+        {% endif %}
         <div class="card-body">
-          <h3 class="card-title">{{ latest_raid.location }}</h3>
-          <div class="mb-3">
-            <i class="fas fa-user me-2"></i><strong>Gracz:</strong> {{
-            latest_raid.nickname }}
-          </div>
-          <div class="mb-3">
-            <i class="fas fa-trophy me-2"></i><strong>Wynik:</strong> {{
-            latest_raid.raid_result }}
-          </div>
-          <div class="mb-3">
-            <i class="fas fa-clock me-2"></i><strong>Czas:</strong> {{
-            latest_raid.play_time_formatted }}
-          </div>
-          <div class="mb-3">
-            <i class="fas fa-calendar-alt me-2"></i><strong>Data:</strong>
-            {{ latest_raid.timestamp.strftime('%Y-%m-%d %H:%M:%S') if
-            latest_raid.timestamp else 'Brak daty' }}
-          </div>
-          <a
-            href="{{ url_for('raid_details', filename=latest_raid.filename) }}"
-            class="btn btn-primary"
-          >
-            <i class="fas fa-eye me-2"></i>Zobacz szczegóły
-          </a>
-          <p class="card-text mt-3">
-            <small class="text-muted">
-              Ostatnia aktualizacja: {{ latest_raid.timestamp.strftime('%Y-%m-%d
-              %H:%M:%S') if latest_raid.timestamp else 'Brak daty' }}
-            </small>
+          <h3 class="card-title">{{ latest_raid.location or 'Nieznana' }}</h3>
+          <p class="card-text">
+            <small class="text-body-secondary"
+              >Zakończono: {{ latest_raid.timestamp_formatted }}</small
+            >
           </p>
         </div>
+        <ul class="list-group list-group-flush">
+          <li
+            class="list-group-item p-3 {% if latest_raid.raid_result == 'Survived' %}text-success-emphasis bg-success-subtle border-success-subtle{% elif latest_raid.raid_result == 'Killed' %}text-danger-emphasis bg-danger-subtle border-danger-subtle{% else %}text-warning-emphasis bg-warning-subtle border-warning-subtle{% endif %}"
+          >
+            <small>Status</small>
+            <h3 class="mb-0">{{ latest_raid.raid_result or 'N/A' }}</h3>
+          </li>
+          <li
+            class="list-group-item p-3 text-primary-emphasis bg-primary-subtle border border-primary-subtle"
+          >
+            <small>Gracz</small>
+            <h3 class="mb-0">
+              {% if latest_raid.nickname %}
+              <a
+                href="{{ url_for('player_details', nickname=latest_raid.nickname) }}"
+                class="link-primary text-decoration-none"
+                >{{ latest_raid.nickname }}</a
+              >
+              {% else %} Nieznany {% endif %}
+            </h3>
+          </li>
+          <li class="list-group-item p-3">
+            <small>Czas</small>
+            <h3 class="mb-0">{{ latest_raid.play_time_formatted }}</h3>
+          </li>
+          <li class="list-group-item p-3">
+            <ul class="list-group list-group-horizontal border-0">
+              <li class="list-group-item col border-0">
+                <small>Kille</small>
+                <h4 class="mb-0">{{ latest_raid.kills_count }}</h4>
+              </li>
+              {# Usunięto Bosses - brak danych #}
+              <li class="list-group-item col border-0">
+                <small>Wyjście</small>
+                <h4 class="mb-0">{{ latest_raid.exit_name or 'N/A' }}</h4>
+              </li>
+            </ul>
+          </li>
+        </ul>
       </div>
+      {% else %}
+      <p>Brak danych o ostatnim rajdzie.</p>
+      {% endif %}
     </div>
-  </div>
-</section>
-{% endif %}
 
-<!-- Sekcja graczy -->
-<section id="players" class="container mb-5">
-  <h2 class="mb-4"><i class="fas fa-users me-2"></i>Gracze</h2>
-  {% if players %}
-  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-    {% for nickname, player_info in players %}
-    <div class="col">
-      <div class="card h-100 shadow-sm animate-fade-in">
-        <div class="card-body">
-          <h5 class="card-title">
-            <a
-              href="{{ url_for('player_details', nickname=nickname) }}"
-              class="text-decoration-none text-primary"
-            >
-              {{ nickname }}
-            </a>
-          </h5>
-          <ul class="list-unstyled">
-            <li class="mb-2">
-              <i class="fas fa-level-up-alt me-2"></i
-              ><strong>Poziom:</strong> {{ player_info.latest_level }}
-            </li>
-            <li class="mb-2">
-              <i class="fas fa-shield-alt me-2"></i><strong>Strona:</strong> {{
-              player_info.latest_side }}
-            </li>
-            <li class="mb-2">
-              <i class="fas fa-flag-checkered me-2"></i
-              ><strong>Rajdów:</strong> {{ player_info.raid_count }}
-            </li>
-          </ul>
-        </div>
+    <div class="col-md-8 col-sm-12">
+      <h2 class="mb-4">Ostatnie rajdy (globalnie)</h2>
+      {% if recent_raids %}
+      <div class="table-responsive">
+        <table class="table table-striped table-hover text-center align-middle">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Nick</th>
+              <th scope="col">Lvl</th>
+              <th scope="col">Frakcja</th>
+              <th scope="col">Rajdy (Gracza)</th>
+              <th scope="col">Exp (Sesja)</th>
+              <th scope="col">Mapa</th>
+              <th scope="col">Profil Gracza</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for raid in recent_raids %}
+            <tr>
+              <th scope="row">{{ loop.index }}</th>
+              <td>{{ raid.nickname or 'N/A' }}</td>
+              <td>{{ raid.level or 'N/A' }}</td>
+              <td>{{ get_item_name(raid.side) }}</td>
+              {# Używamy get_item_name #}
+              <td>{{ raid.raid_count }}</td>
+              <td>{{ "{:,.0f}".format(raid.exp).replace(',', ' ') }}</td>
+              <td>{{ raid.location or 'N/A' }}</td>
+              <td>
+                {% if raid.nickname %}
+                <a
+                  href="{{ url_for('player_details', nickname=raid.nickname) }}"
+                  class="btn btn-secondary btn-sm"
+                  >zobacz</a
+                >
+                {% else %} - {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
+      {% else %}
+      <p>Brak ostatnich rajdów do wyświetlenia.</p>
+      {% endif %}
     </div>
-    {% endfor %}
   </div>
-  {% else %}
-  <div class="alert alert-warning" role="alert">
-    <i class="fas fa-exclamation-circle me-2"></i>Brak znalezionych graczy.
-  </div>
-  {% endif %}
 </section>
 {% endblock %}

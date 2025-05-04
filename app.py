@@ -18,6 +18,20 @@ TRANSLATION_FILENAME = 'pl.json'
 RAID_FILE_PATTERN = 'onEndLocalRaidRequest_request_*.json'
 TRANSLATION_FILE_PATH = os.path.join(TRANSLATE_FOLDER, TRANSLATION_FILENAME)
 
+MAP_IMAGES = {
+    "Fabryce": "factory.avif",
+    "Customs": "customs.avif", # Przykład, dodaj resztę map
+    "Woods": "woods.avif",
+    "Shoreline": "shoreline.avif",
+    "Interchange": "interchange.avif",
+    "Reserve": "reserve.avif",
+    "Labs": "labs.avif",
+    "Streets of Tarkov": "streets.avif",
+    "Lighthouse": "lighthouse.avif",
+    "Ground Zero": "ground_zero.avif",
+    "unknown": "unknown_map.avif"
+}
+
 # --- Wczytywanie Tłumaczeń ---
 translations = {}
 
@@ -436,122 +450,226 @@ def process_single_raid_file(filepath):
 def load_all_raid_data():
     """Skanuje folder logów, przetwarza wszystkie pliki rajdów i agreguje dane."""
     all_processed_raids = []
-    players_summary = {}
+    # Zmieniamy players_summary na defaultdict dla łatwiejszego dodawania statystyk
+    players_summary = defaultdict(lambda: {
+        'raid_ids': [],
+        'latest_timestamp': datetime.datetime.min,
+        'latest_level': None,
+        'latest_side': None,
+        'latest_total_experience': 0,
+        'raid_count': 0,
+        'total_kills': 0,
+        'total_deaths': 0, # Liczba rajdów nieprzetrwanych
+        'total_survived': 0, # Liczba rajdów przetrwanych
+        'total_headshots': 0,
+        'calculated_kd': 'N/A', # Domyślnie N/A
+        'overall_stats_latest': {} # Przechowamy ostatnie znane overall_stats
+    })
     errors = []
 
     raid_files = glob.glob(os.path.join(DEBUG_LOGS_FOLDER, RAID_FILE_PATTERN))
 
-    # Sortuj pliki po timestampie (najnowsze na końcu) - używa zaktualizowanej funkcji get_timestamp_from_filename
+    # Sortuj pliki po timestampie (najnowsze na końcu)
     raid_files.sort(key=lambda f: get_timestamp_from_filename(os.path.basename(f)))
 
+    # Najpierw przetwórzmy wszystkie rajdy i zapiszmy je
     for filepath in raid_files:
-        # Sprawdzenie czy plik istnieje przed próbą przetworzenia
         if not os.path.exists(filepath):
-             print(f"OSTRZEŻENIE: Pomijanie nieistniejącego pliku znalezionego przez glob: {filepath}")
-             continue
+            print(f"OSTRZEŻENIE: Pomijanie nieistniejącego pliku znalezionego przez glob: {filepath}")
+            continue
 
         processed_data, error = process_single_raid_file(filepath)
         if error:
-            # Dodaj nazwę pliku do komunikatu o błędzie dla lepszego kontekstu
             errors.append(f"{os.path.basename(filepath)}: {error}")
         if processed_data:
             all_processed_raids.append(processed_data)
-            nickname = processed_data.get('nickname')
-            if nickname:
-                if nickname not in players_summary:
-                    players_summary[nickname] = {'raid_ids': [], 'latest_timestamp': datetime.datetime.min}
 
-                # Aktualizuj tylko jeśli bieżący rajd jest nowszy niż ostatnio zapisany dla gracza
-                current_timestamp = processed_data.get('timestamp', datetime.datetime.min)
-                if current_timestamp > players_summary[nickname]['latest_timestamp']:
-                    players_summary[nickname]['latest_level'] = processed_data.get('level')
-                    players_summary[nickname]['latest_side'] = processed_data.get('side')
-                    players_summary[nickname]['latest_timestamp'] = current_timestamp # Zapisz timestamp ostatniego rajdu
+    # Teraz agregujmy dane w players_summary, iterując po przetworzonych rajdach
+    # Sortujemy rajdy rosnąco po dacie, aby 'latest' było faktycznie ostatnie
+    all_processed_raids.sort(key=lambda r: r.get('timestamp', datetime.datetime.min))
 
-                players_summary[nickname]['raid_ids'].append(processed_data['filename'])
+    for raid_data in all_processed_raids:
+        nickname = raid_data.get('nickname')
+        if nickname:
+            player = players_summary[nickname] # Dostęp do słownika gracza
 
-    # Dodaj liczbę rajdów do podsumowania graczy
+            player['raid_ids'].append(raid_data['filename'])
+            player['raid_count'] += 1
+
+            # Aktualizuj 'latest' dane
+            current_timestamp = raid_data.get('timestamp', datetime.datetime.min)
+            # Zawsze aktualizujemy, bo iterujemy w kolejności chronologicznej
+            player['latest_level'] = raid_data.get('level')
+            player['latest_side'] = raid_data.get('side')
+            player['latest_total_experience'] = raid_data.get('total_experience') # Zapiszmy ostatnie znane całkowite EXP
+            player['latest_timestamp'] = current_timestamp # Zapiszmy timestamp ostatniego rajdu
+            player['overall_stats_latest'] = raid_data.get('overall_stats', {}) # Zapiszmy ostatnie overall_stats
+
+            # Agregacja statystyk
+            player['total_kills'] += raid_data.get('kills_count', 0)
+
+            # Liczenie headshotów z listy ofiar
+            victims = raid_data.get('victims', [])
+            for victim in victims:
+                # Zakładamy, że 'BodyPart' zawiera informację o headshocie
+                # Może być konieczne dostosowanie klucza lub wartości ('Head'?)
+                # Sprawdzamy, czy 'BodyPart' to 'Head' (lub odpowiednik z tłumaczeń)
+                # Użyjemy surowej wartości 'Head' dla pewności
+                if victim.get('BodyPart') == 'Head':
+                     player['total_headshots'] += 1
+
+            # Sprawdzanie wyniku rajdu
+            raid_result = raid_data.get('raid_result')
+            if raid_result == 'Survived':
+                player['total_survived'] += 1
+            else:
+                # Zakładamy, że każdy inny wynik to 'śmierć' w kontekście K/D i statystyk graczy
+                # Można to doprecyzować, jeśli np. MIA ma być inaczej liczone
+                player['total_deaths'] += 1
+
+
+    # Po przetworzeniu wszystkich rajdów, oblicz K/D dla każdego gracza
     for nick, data in players_summary.items():
-        data['raid_count'] = len(data['raid_ids'])
-        # Usuń pomocniczy timestamp z finalnego słownika
-        data.pop('latest_timestamp', None)
+        if data['total_deaths'] > 0:
+            data['calculated_kd'] = f"{data['total_kills'] / data['total_deaths']:.2f}"
+        else:
+            # Jeśli 0 śmierci, K/D jest równe liczbie killi lub N/A/'∞'
+            data['calculated_kd'] = f"{data['total_kills']}" # Lub '∞' lub 'N/A'
 
+        # Usuń pomocniczy timestamp z finalnego słownika, jeśli go nie potrzebujemy na zewnątrz
+        # data.pop('latest_timestamp', None) # Zostawmy na razie, może się przydać
+
+    # Zwracamy posortowane rajdy (od najnowszych) i podsumowanie graczy
+    all_processed_raids.sort(key=lambda r: r.get('timestamp', datetime.datetime.min), reverse=True)
 
     return all_processed_raids, players_summary, errors
 
-# --- Kontekst procesora (BEZ ZMIAN) ---
+def get_map_image_url(location_name):
+    """Zwraca URL do obrazka mapy na podstawie przetłumaczonej nazwy."""
+    filename = MAP_IMAGES.get(location_name, MAP_IMAGES["unknown"])
+    # Zwracaj pełną ścieżkę, którą obsłuży url_for w szablonie
+    # Np. 'maps/factory.avif'
+    return f"images/maps/{filename}"
+
+
+# --- Kontekst procesora (Dodajemy map_images do kontekstu) ---
 @app.context_processor
-def inject_now():
-    return {'now': datetime.datetime.utcnow}
+def inject_utilities():
+    # Dajemy dostęp do funkcji get_map_image_url, get_item_name i aktualnej daty w każdym szablonie
+    return {
+        'now': datetime.datetime.utcnow,
+        'get_map_image_url': get_map_image_url,
+        'get_item_name': get_item_name # Dodajemy funkcję tłumaczącą
+        }
 
 # --- Trasy Aplikacji (BEZ ZMIAN W LOGICE, tylko w renderowaniu szablonów, które zostaną zaktualizowane) ---
 
 @app.route('/')
 def index():
-    all_raids, players, errors = load_all_raid_data()
-    # Sortuj rajdy po dacie malejąco (najnowsze pierwsze) dla 'latest_raid'
-    all_raids_sorted = sorted(all_raids, key=lambda r: r.get('timestamp', datetime.datetime.min), reverse=True)
-    latest_raid = all_raids_sorted[0] if all_raids_sorted else None
-    # Sortuj graczy po nicku (ignorując wielkość liter)
-    sorted_players = sorted(players.items(), key=lambda item: item[0].lower())
-    return render_template('index.html',
+    all_raids, players_summary, errors = load_all_raid_data()
+
+    # Dane dla karty ostatniego rajdu (globalnie)
+    latest_raid = all_raids[0] if all_raids else None
+
+    # Dane dla tabeli ostatnich rajdów (np. 10 ostatnich)
+    recent_raids_data = []
+    limit = 10 # Ile ostatnich rajdów pokazać w tabeli
+    for raid in all_raids[:limit]:
+        nickname = raid.get('nickname')
+        player_info = players_summary.get(nickname, {}) # Pobierz info gracza
+        raid_summary = {
+            'filename': raid['filename'],
+            'timestamp_formatted': raid.get('timestamp_formatted', 'N/A'),
+            'location': raid['location'],
+            'nickname': nickname,
+            'level': player_info.get('latest_level', 'N/A'), # Weź poziom z podsumowania
+            'side': player_info.get('latest_side', 'N/A'),  # Weź frakcję z podsumowania
+            'raid_count': player_info.get('raid_count', 0), # Liczba rajdów gracza
+            'exp': raid.get('total_session_exp_calculated', 0),
+            'map_image_filename': get_map_image_url(raid['location']) # Dodajemy nazwę pliku obrazka mapy
+        }
+        recent_raids_data.append(raid_summary)
+
+    return render_template('index.html', # Używamy nowego szablonu
                            latest_raid=latest_raid,
-                           players=sorted_players,
+                           recent_raids=recent_raids_data, # Przekazujemy przygotowane dane
+                           errors=errors)
+
+@app.route('/players')
+def players_list():
+    _, players_summary, errors = load_all_raid_data() # Potrzebujemy tylko summary
+
+    # Konwertuj słownik summary na listę, dodając nick do każdego elementu
+    players_list_data = []
+    for nickname, data in players_summary.items():
+        player_data = data.copy() # Skopiuj dane
+        player_data['nickname'] = nickname # Dodaj nick bezpośrednio do słownika
+        # Dodajemy też przetłumaczoną nazwę frakcji dla szablonu
+        player_data['side_translated'] = get_item_name(player_data.get('latest_side', 'Unknown'))
+        players_list_data.append(player_data)
+
+    # Sortuj graczy alfabetycznie po nicku (ignorując wielkość liter)
+    players_list_data.sort(key=lambda p: p['nickname'].lower())
+
+    return render_template('gracze.html',
+                           players_list=players_list_data,
                            errors=errors)
 
 @app.route('/player/<nickname>')
 def player_details(nickname):
-    all_raids, players, errors = load_all_raid_data()
-    player_info = players.get(nickname)
+    all_raids, players_summary, errors = load_all_raid_data()
+    player_info = players_summary.get(nickname)
+
     if not player_info:
         abort(404, description="Gracz nie znaleziony")
 
-    # Filtruj rajdy dla gracza i sortuj malejąco po dacie
+    # Filtruj rajdy tylko dla tego gracza (najnowsze pierwsze, bo all_raids jest już posortowane)
     player_raids = [raid for raid in all_raids if raid.get('nickname') == nickname]
-    player_raids.sort(key=lambda r: r.get('timestamp', datetime.datetime.min), reverse=True)
 
-    # Nie trzeba już upraszczać, przekażemy pełne dane do szablonu jeśli zajdzie potrzeba
-    # Ale dla listy rajdów na stronie gracza, uproszczona wersja jest OK
-    simplified_raids = []
-    for raid in player_raids:
-        simplified_raids.append({
-            'filename': raid['filename'],
-            'timestamp_formatted': raid.get('timestamp_formatted', 'N/A'), # Użyj sformatowanej daty
-            'location': raid['location'],
-            'result': raid['raid_result'],
-            'play_time_formatted': raid['play_time_formatted'],
-            'kills': raid.get('kills_count', 0),
-            'exp': raid.get('total_session_exp_calculated', 0)
-        })
+    # Wybierz szablon na podstawie ostatniej znanej frakcji gracza
+    player_side = player_info.get('latest_side', 'Unknown').lower() # Pobierz frakcję i zmień na małe litery
+    if player_side == 'usec':
+        template_name = 'profil-usec.html'
+    elif player_side == 'bear':
+        template_name = 'profil-bear.html'
+    else:
+        # Domyślny szablon lub obsługa błędu, jeśli frakcja jest inna/nieznana
+        # Na razie użyjemy usec jako fallback, można dodać dedykowany szablon ogólny
+        template_name = 'profil-usec.html' # Można zmienić na np. 'profil-generic.html'
 
-    return render_template('player_details.html',
+    latest_raid = player_raids[0] if player_raids else None
+
+    # Przygotowanie danych dla sekcji statystyk ogólnych (używamy danych z player_info)
+    # Te dane pochodzą z ostatniego rajdu (overall_stats_latest) lub są obliczone (calculated_kd, totals)
+    player_stats = {
+        'sessions': player_info.get('raid_count', 0),
+        'survived_sessions': player_info.get('total_survived', 0),
+        'deaths': player_info.get('total_deaths', 0), # Używamy obliczonej sumy śmierci
+        'kills': player_info.get('total_kills', 0), # Używamy obliczonej sumy killi
+        'survival_rate': player_info.get('overall_stats_latest', {}).get('survival_rate', 'N/A'), # SR z ostatniego overall
+        'kd_ratio': player_info.get('calculated_kd', 'N/A'), # Obliczone KD
+        'headshots': player_info.get('total_headshots', 0), # Obliczone headshoty
+        'longest_shot': player_info.get('overall_stats_latest', {}).get('longest_shot_formatted', 'N/A'), # Longest shot z ostatniego overall
+    }
+
+
+    # Pobieramy umiejętności TYLKO jeśli to szablon BEAR i istnieje ostatni rajd
+    skills_changed = []
+    if template_name == 'profil-bear.html' and latest_raid:
+        skills_changed = latest_raid.get('skills_changed', [])
+
+    # TODO: Dodaj logikę dla Achievements, jeśli będziesz miał dane
+    achievements = []
+
+    return render_template(template_name,
                            nickname=nickname,
-                           player_info=player_info,
-                           raids=simplified_raids,
-                           errors=errors) # Przekaż też ewentualne błędy globalne
-
-@app.route('/raid/<path:filename>')
-def raid_details(filename):
-    filepath = os.path.join(DEBUG_LOGS_FOLDER, filename)
-
-    # Bezpieczne sprawdzenie ścieżki
-    expected_prefix = os.path.abspath(DEBUG_LOGS_FOLDER)
-    abs_filepath = os.path.abspath(filepath)
-    if not abs_filepath.startswith(expected_prefix) or not os.path.isfile(abs_filepath):
-         abort(404, description="Plik rajdu nie znaleziony lub ścieżka jest nieprawidłowa.")
-
-    processed_data, error = process_single_raid_file(filepath)
-
-    if not processed_data and not error:
-        error = "Nie można załadować danych z pliku. Może być uszkodzony lub w nieprawidłowym formacie."
-
-    if error: # Obsługa zarówno błędów krytycznych (brak danych) jak i niekrytycznych (dane są, ale był problem)
-         print(f"Błąd przetwarzania pliku {filename}: {error}")
-         # Zwróć szablon z błędem, nawet jeśli dane częściowo istnieją
-         return render_template('raid_details.html', data=processed_data, error=error, filename=filename), 500 if not processed_data else 200
-
-    # Jeśli wszystko OK
-    return render_template('raid_details.html', data=processed_data, error=None, filename=filename)
+                           player_info=player_info, # Przekazujemy całe podsumowanie gracza
+                           player_stats=player_stats, # Przekazujemy przygotowane statystyki
+                           latest_raid=latest_raid, # Ostatni rajd tego gracza
+                           player_raids=player_raids, # Pełna lista rajdów tego gracza (dla tabeli i modala)
+                           skills=skills_changed, # Lista zmienionych umiejętności (tylko dla BEAR)
+                           achievements=achievements, # Pusta lista achievements
+                           errors=errors) # Globalne błędy
 
 
 # Uruchomienie aplikacji
