@@ -1,690 +1,128 @@
-<!DOCTYPE html>
-<html lang="pl">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Raport z Raidu - {{ data.nickname or 'Gracz' }}</title>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-    />
-    <style>
-      body {
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        line-height: 1.6;
-        margin: 0;
-        padding: 0;
-        background-color: #2c2f33;
-        color: #e0e0e0;
-      }
-      .container {
-        background-color: #36393f;
-        padding: 15px 25px;
-        border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-        max-width: 950px;
-        margin: 20px auto;
-      }
-      h1,
-      h2 {
-        color: #fff;
-        border-bottom: 1px solid #4f545c;
-        padding-bottom: 10px;
-        margin-top: 25px;
-      }
-      h1 {
-        text-align: center;
-        margin-top: 0;
-        font-size: 1.8em;
-        margin-bottom: 20px;
-      }
-      h2 {
-        font-size: 1.4em;
-        margin-bottom: 15px;
-      }
-      .error {
-        color: #f0ad4e;
-        background-color: #4e3a2a;
-        border: 1px solid #8c6a4e;
-        padding: 15px;
-        border-radius: 4px;
-        margin-bottom: 20px;
-      }
-      .section {
-        margin-bottom: 25px;
-        background-color: #40444b;
-        padding: 15px 20px;
-        border-radius: 6px;
-      }
-      .grid-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 20px;
-      } /* Siatka dla sekcji */
-      .key-value p,
-      .health-list li,
-      .skill-list li,
-      .victim-list li,
-      .damage-details li,
-      .item-list li,
-      .overall-stats p {
-        margin-bottom: 8px;
-        border-bottom: 1px dashed #4f545c;
-        padding-bottom: 5px;
-      }
-      .key-value p:last-child,
-      .health-list li:last-child,
-      .skill-list li:last-child,
-      .victim-list li:last-child,
-      .damage-details li:last-child,
-      .item-list li:last-child,
-      .overall-stats p:last-child {
-        margin-bottom: 0;
-        border-bottom: none;
-      }
-      strong {
-        color: #7289da;
-        min-width: 180px;
-        display: inline-block;
-        vertical-align: top;
-      } /* Zmniejszono min-width */
-      .health-bar-container {
-        background-color: #5c6067;
-        border-radius: 4px;
-        height: 10px;
-        width: 100px;
-        display: inline-block;
-        vertical-align: middle;
-        margin-left: 10px;
-        overflow: hidden;
-      }
-      .health-bar {
-        background-color: #43b581;
-        height: 100%;
-        border-radius: 4px;
-        transition: width 0.5s ease-in-out;
-      }
-      .health-low {
-        background-color: #faa61a;
-      }
-      .health-critical {
-        background-color: #f04747;
-      }
-      .health-zero {
-        background-color: #747f8d;
-      }
-      ul {
-        list-style: none;
-        padding-left: 0;
-        margin-top: 0;
-      }
-      .result-killed {
-        color: #f04747;
-        font-weight: bold;
-      }
-      .result-survived {
-        color: #43b581;
-        font-weight: bold;
-      }
-      .result-mia {
-        color: #faa61a;
-        font-weight: bold;
-      }
-      .coords {
-        font-family: monospace;
-        font-size: 0.9em;
-        color: #b9bbbe;
-      }
-      .weapon-name {
-        font-style: italic;
-        color: #99aab5;
-      }
-      .damage-received {
-        color: #f04747;
-      }
-      .blood-loss {
-        color: #c86a6a;
-      }
-      .distance {
-        color: #95a5a6;
-      }
-      h3 {
-        color: #bdbdbd;
-        font-size: 1.1em;
-        margin-top: 15px;
-        margin-bottom: 10px;
-        border-bottom: 1px solid #484c53;
-        padding-bottom: 5px;
-      }
-      .victim-list li {
-        padding: 8px 0;
-      } /* Zmniejszono padding */
-      .victim-details {
-        margin-left: 20px;
-        display: block;
-        font-size: 0.9em;
-        color: #b9bbbe;
-      } /* Zmniejszono wcięcie i font */
-      .victim-details i {
-        margin-right: 4px;
-        color: #7289da;
-        width: 14px;
-        text-align: center;
-      } /* Ustawiono szerokość ikon */
-      .victim-role {
-        font-weight: bold;
-        color: #ddd;
-      }
-      .item-list li {
-        font-size: 0.9em;
-        color: #c3c4c7;
-        padding: 4px 0;
-        border-bottom: 1px solid #4a4e55;
-      }
-      .item-list .item-count {
-        color: #fff;
-        font-weight: bold;
-        margin-left: 5px;
-        background-color: #5c6067;
-        padding: 0 4px;
-        border-radius: 3px;
-        font-size: 0.9em;
-      }
-      .no-items {
-        color: #8e9297;
-        font-style: italic;
-      }
-      .vitals span {
-        margin-right: 15px;
-      } /* Odstępy dla witalności */
-      .skill-list strong {
-        min-width: 120px;
-      } /* Mniejsza szerokość dla nazw skilli */
-      .overall-stats strong {
-        min-width: 150px;
-      }
-      .icon {
-        width: 18px;
-        text-align: center;
-        margin-right: 6px;
-        color: #a3b3f0;
-      } /* Styl dla ikon */
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <h1><i class="fa-solid fa-file-waveform icon"></i> Raport z Raidu</h1>
+{% extends "base.html" %} {% block title %}Strona Główna - StatsMods Tarkov{%
+endblock %} {% block content %}
+<section>
+  <h1 class="text-body-emphasis">Witaj w StatsMods Tarkov</h1>
+  <p class="fs-5 col-md-8">Przeglądaj statystyki rajdów i graczy.</p>
 
-      {% if error %}
-      <div class="error">
-        <strong
-          ><i class="fa-solid fa-triangle-exclamation icon"></i> Wystąpił błąd
-          podczas ładowania danych z pliku {{ filename }}:</strong
-        ><br />
-        {{ error }}
-      </div>
-      {% elif data %}
+  <hr class="col-3 col-md-12 my-5" />
 
-      <div class="grid-container">
-        {# Siatka dla głównych sekcji #} {# --- Sekcja Podsumowanie Raidu --- #}
-        <div class="section">
-          <h2>
-            <i class="fa-solid fa-flag-checkered icon"></i> Podsumowanie Raidu
-          </h2>
-          <div class="key-value">
-            <p>
-              <strong
-                ><i class="fa-solid fa-server icon"></i> Serwer ID:</strong
-              >
-              {{ data.server_id or 'Brak danych' }}
-            </p>
-            <p>
-              <strong
-                ><i class="fa-solid fa-map-location-dot icon"></i>
-                Lokalizacja:</strong
-              >
-              {{ data.location or 'Brak danych' }}
-            </p>
-            <p>
-              <strong><i class="fa-solid fa-trophy icon"></i> Wynik:</strong>
-              <span
-                class="result-{{ data.raid_result|lower if data.raid_result else 'unknown' }}"
-              >
-                {{ data.raid_result or 'Nieznany' }}
-              </span>
-            </p>
-            {% if data.exit_name %}
-            <p>
-              <strong
-                ><i class="fa-solid fa-door-open icon"></i> Punkt
-                Ekstrakcji:</strong
-              >
-              {{ data.exit_name }}
-            </p>
-            {% endif %} {% if data.raid_result == 'Killed' %}
-            <p>
-              <strong
-                ><i class="fa-solid fa-skull-crossbones icon"></i> Zabity
-                przez:</strong
-              >
-              {{ data.killer_name or 'Nieznany' }} ({{ data.killer_side or 'N/A'
-              }})
-            </p>
-            {% if data.killed_by_part %}
-            <p>
-              <strong
-                ><i class="fa-solid fa-bullseye icon"></i> Część ciała
-                (śmiertelna):</strong
-              >
-              {{ data.killed_by_part }}
-            </p>
-            {% endif %} {% if data.killer_weapon_name %}
-            <p>
-              <strong
-                ><i class="fa-solid fa-gun icon"></i> Broń (zabójcy):</strong
-              >
-              <span class="weapon-name">{{ data.killer_weapon_name }}</span>
-            </p>
-            {% endif %} {% if data.lethal_damage_amount is defined %}
-            <p>
-              <strong
-                ><i class="fa-solid fa-bolt icon"></i> Obrażenie
-                śmiertelne:</strong
-              >
-              {{ data.lethal_damage_amount }} pkt (Typ: {{
-              data.lethal_damage_type }})
-            </p>
-            {% endif %} {% endif %}
-            <p>
-              <strong
-                ><i class="fa-solid fa-stopwatch icon"></i> Czas trwania
-                rajdu:</strong
-              >
-              {{ data.play_time_formatted or 'N/A' }}
-            </p>
-          </div>
-        </div>
-
-        {# --- Sekcja Informacje o Graczu --- #}
-        <div class="section">
-          <h2><i class="fa-solid fa-user icon"></i> Gracz</h2>
-          <div class="key-value">
-            <p>
-              <strong><i class="fa-solid fa-id-card icon"></i> Nick:</strong> {{
-              data.nickname or 'Brak danych' }}
-            </p>
-            <p>
-              <strong
-                ><i class="fa-solid fa-layer-group icon"></i> Poziom:</strong
-              >
-              {{ data.level or 'N/A' }}
-            </p>
-            <p>
-              <strong
-                ><i class="fa-solid fa-shield-halved icon"></i> Frakcja:</strong
-              >
-              {{ data.side or 'N/A' }}
-            </p>
-          </div>
-        </div>
-
-        {# --- Sekcja Statystyki Ogólne --- #} {% if data.overall_stats %}
-        <div class="section">
-          <h2>
-            <i class="fa-solid fa-book-skull icon"></i> Statystyki Ogólne
-            (Konto)
-          </h2>
-          <div class="key-value overall-stats">
-            <p>
-              <strong
-                ><i class="fa-solid fa-gamepad icon"></i> Łącznie sesji
-                PMC:</strong
-              >
-              {{ data.overall_stats.sessions or 'N/A' }}
-            </p>
-            <p>
-              <strong
-                ><i class="fa-solid fa-person-rifle icon"></i> Łącznie
-                zabójstw:</strong
-              >
-              {{ data.overall_stats.kills or 'N/A' }}
-            </p>
-            <p>
-              <strong
-                ><i class="fa-solid fa-skull icon"></i> Łącznie śmierci:</strong
-              >
-              {{ data.overall_stats.deaths or 'N/A' }}
-            </p>
-            <p>
-              <strong
-                ><i class="fa-solid fa-percent icon"></i> K/D Ratio:</strong
-              >
-              {{ data.overall_stats.kd_ratio or 'N/A' }}
-            </p>
-            <p>
-              <strong
-                ><i class="fa-solid fa-person-running icon"></i> Współczynnik
-                przetrwania:</strong
-              >
-              {{ data.overall_stats.survival_rate or 'N/A' }}
-            </p>
-          </div>
-        </div>
-        {% endif %} {# --- Sekcja Stan Zdrowia i Witalność (Końcowy) --- #}
-        <div class="section">
-          <h2>
-            <i class="fa-solid fa-heart-pulse icon"></i> Zdrowie i Witalność
-            (Koniec)
-          </h2>
-          {% if data.final_vitals %}
-          <div class="key-value vitals">
-            <p>
-              <span
-                ><strong
-                  ><i class="fa-solid fa-bolt-lightning icon"></i>
-                  Energia:</strong
-                >
-                {{ data.final_vitals.Energy }}/{{ data.final_vitals.MaxEnergy
-                }}</span
-              >
-              <span
-                ><strong
-                  ><i class="fa-solid fa-droplet icon"></i> Nawodnienie:</strong
-                >
-                {{ data.final_vitals.Hydration }}/{{
-                data.final_vitals.MaxHydration }}</span
-              >
-              {% if data.final_vitals.Temperature is not none %}
-              <span
-                ><strong
-                  ><i class="fa-solid fa-temperature-half icon"></i>
-                  Temp.:</strong
-                >
-                {{ data.final_vitals.Temperature }}°C</span
-              >
-              {% endif %}
-            </p>
-          </div>
-          {% endif %} {% if data.final_health %}
-          <h3>
-            <i class="fa-solid fa-user-injured icon"></i> Stan Części Ciała:
-          </h3>
-          <ul class="health-list">
-            {% for part, health_details in data.final_health.items() %}
-            <li>
-              <strong>{{ part }}:</strong> {{ health_details.current }} / {{
-              health_details.maximum }}
-              <div class="health-bar-container">
-                {% set percentage = (health_details.current /
-                health_details.maximum * 100) if health_details.maximum > 0 else
-                0 %} {% set health_class = 'health-bar' %} {% if
-                health_details.current == 0 %}{% set health_class = health_class
-                ~ ' health-zero' %} {% elif percentage <= 15 %}{% set
-                health_class = health_class ~ ' health-critical' %} {% elif
-                percentage <= 50 %}{% set health_class = health_class ~ '
-                health-low' %} {% endif %}
-                <div
-                  class="{{ health_class }}"
-                  style="width: {{ percentage }}%;"
-                ></div>
-              </div>
-            </li>
-            {% endfor %}
-          </ul>
-          {% else %}
-          <p class="no-items">Brak danych o stanie zdrowia.</p>
-          {% endif %}
-        </div>
-
-        {# --- Sekcja Statystyki Sesji --- #}
-        <div class="section">
-          <h2>
-            <i class="fa-solid fa-chart-simple icon"></i> Statystyki Sesji
-          </h2>
-          {# Zmieniona ikona #}
-          <div class="key-value">
-            <p>
-              <strong
-                ><i class="fa-solid fa-award icon"></i> EXP (z pliku):</strong
-              >
-              {{ data.total_session_exp_from_json or 0 }}
-            </p>
-            {% if data.session_stats %}
-            <p>
-              <strong
-                ><i class="fa-solid fa-calculator icon"></i> EXP
-                (obliczone):</strong
-              >
-              {{ data.total_session_exp_calculated or 0 }}
-            </p>
-            {% if data.session_stats.exp_kill > 0 %}
-            <p>
-              <strong
-                ><i class="fa-solid fa-person-rifle icon"></i> EXP
-                Zabójstwa:</strong
-              >
-              {{ data.session_stats.exp_kill }}
-            </p>
-            {% endif %} {% if data.session_stats.exp_looting > 0 %}
-            <p>
-              <strong
-                ><i class="fa-solid fa-box-open icon"></i> EXP
-                Przeszukiwanie:</strong
-              >
-              {{ data.session_stats.exp_looting }}
-            </p>
-            {% endif %} {% if data.session_stats.exp_exit_status > 0 %}
-            <p>
-              <strong
-                ><i class="fa-solid fa-door-closed icon"></i> EXP Status
-                wyjścia:</strong
-              >
-              {{ data.session_stats.exp_exit_status }}
-            </p>
-            {% endif %}
-            <p>
-              <strong
-                ><i class="fa-solid fa-hand-fist icon"></i> Zadane
-                obrażenia:</strong
-              >
-              {{ data.session_stats.damage_dealt or 0 }}
-            </p>
-            <p>
-              <strong
-                ><i class="fa-solid fa-person-burst icon"></i> Zniszczone części
-                ciała:</strong
-              >
-              {{ data.session_stats.body_parts_destroyed or 0 }}
-            </p>
-            <p>
-              <strong
-                ><i class="fa-solid fa-person-running icon"></i> Przebyty
-                dystans:</strong
-              >
-              <span class="distance"
-                >{{ data.session_stats.distance_formatted or 'N/A' }}</span
-              >
-            </p>
-            {% if data.session_stats.blood_loss > 0 %}
-            <p>
-              <strong
-                ><i class="fa-solid fa-droplet icon"></i> Utracona krew:</strong
-              >
-              <span class="blood-loss"
-                >{{ data.session_stats.blood_loss }}</span
-              >
-            </p>
-            {% endif %} {% if data.session_stats.damage_received_total > 0 %}
-            <p>
-              <strong
-                ><i class="fa-solid fa-heart-crack icon"></i> Otrzymane
-                obrażenia:</strong
-              >
-              <span class="damage-received"
-                >{{ data.session_stats.damage_received_total }}</span
-              >
-            </p>
-            {% if data.session_stats.damage_received_details %}
-            <h3>
-              <i class="fa-solid fa-user-injured icon"></i> Otrzymane
-              (Szczegóły):
-            </h3>
-            <ul class="damage-details">
-              {% for part, dmg in
-              data.session_stats.damage_received_details.items() %}
-              <li>
-                <strong>{{ part }}:</strong>
-                <span class="damage-received">{{ dmg }}</span>
-              </li>
-              {% endfor %}
-            </ul>
-            {% endif %} {% endif %} {% else %}
-            <p class="no-items">Brak szczegółowych statystyk sesji.</p>
-            {% endif %}
-          </div>
-        </div>
-
-        {# --- Sekcja Ofiary Gracza --- #} {% if data.victims %}
-        <div class="section">
-          <h2><i class="fa-solid fa-crosshairs icon"></i> Ofiary</h2>
-          <ul class="victim-list">
-            {% for victim in data.victims %}
-            <li>
-              <strong>{{ victim.Name or 'Nieznany' }}</strong>
-              (<i class="fa-solid fa-layer-group" title="Poziom"></i> {{
-              victim.Level or 'N/A' }}) -
-              <span class="victim-role"
-                >{{ victim.SideTranslated or victim.Side or 'N/A' }}</span
-              >
-              {% if victim.Role and victim.Role != victim.Side %}(<span
-                class="victim-role"
-                >{{ victim.RoleTranslated or victim.Role }}</span
-              >){% endif %}
-              <span class="victim-details">
-                <i class="fa-solid fa-gun" title="Użyta broń"></i>
-                <span class="weapon-name"
-                  >{{ victim.WeaponName or 'N/A' }}</span
-                >
-                | <i class="fa-solid fa-ruler-horizontal" title="Dystans"></i>
-                <span class="distance"
-                  >{{ victim.DistanceFormatted or 'N/A' }}</span
-                >
-                |
-                <i
-                  class="fa-solid fa-bullseye"
-                  title="Trafiona część ciała"
-                ></i>
-                {{ victim.BodyPartTranslated or 'N/A' }}
-              </span>
-            </li>
-            {% endfor %}
-          </ul>
-        </div>
-        {% endif %} {# --- Sekcja Postęp Umiejętności --- #} {% if
-        data.skills_changed %}
-        <div class="section">
-          <h2><i class="fa-solid fa-star icon"></i> Postęp Umiejętności</h2>
-          <ul class="skill-list">
-            {% for skill in data.skills_changed %}
-            <li>
-              <strong>{{ skill.SkillName or skill.Id }}:</strong> +{{
-              skill.PointsEarnedFormatted }} pkt (Postęp: {{
-              skill.ProgressFormatted }})
-            </li>
-            {% endfor %}
-          </ul>
-        </div>
-        {% else %} {# Można dodać sekcję nawet jeśli nie było zmian #}
-        <div class="section">
-          <h2><i class="fa-solid fa-star icon"></i> Postęp Umiejętności</h2>
-          <p class="no-items">Brak zmian w umiejętnościach w tej sesji.</p>
-        </div>
-        {% endif %} {# --- Sekcja Przedmioty Wyniesione --- #}
-        <div class="section">
-          <h2>
-            <i class="fa-solid fa-briefcase icon"></i> Przedmioty Wyniesione
-          </h2>
-          {% if data.transfer_items %}
-          <ul class="item-list">
-            {% for item in data.transfer_items %}
-            <li>
-              {{ item.name }} {% if item.count > 1 %}<span class="item-count"
-                >x{{ item.count }}</span
-              >{% endif %}
-            </li>
-            {% endfor %}
-          </ul>
-          {% else %}
-          <p class="no-items">Brak przedmiotów wyniesionych z rajdu.</p>
-          {% endif %}
-        </div>
-
-        {# --- Sekcja Przedmioty Znalezione w Rajdzie (FiR) --- #}
-        <div class="section">
-          <h2>
-            <i class="fa-solid fa-magnifying-glass icon"></i> Znalezione w
-            Rajdzie (FiR)
-          </h2>
-          {% if data.found_in_raid_items %}
-          <ul class="item-list">
-            {% for item in data.found_in_raid_items %}
-            <li>
-              {{ item.name }} {% if item.count > 1 %}<span class="item-count"
-                >x{{ item.count }}</span
-              >{% endif %}
-            </li>
-            {% endfor %}
-          </ul>
-          {% else %}
-          <p class="no-items">Brak przedmiotów znalezionych w rajdzie.</p>
-          {% endif %}
-        </div>
-
-        {# --- Sekcja Przedmioty Questowe --- #}
-        <div class="section">
-          <h2>
-            <i class="fa-solid fa-book icon"></i> Przedmioty Questowe (Koniec)
-          </h2>
-          {% if data.carried_quest_items %}
-          <ul class="item-list">
-            {% for item in data.carried_quest_items %}
-            <li>
-              {{ item.name }} {% if item.count > 1 %}<span class="item-count"
-                >x{{ item.count }}</span
-              >{% endif %}
-            </li>
-            {% endfor %}
-          </ul>
-          {% else %}
-          <p class="no-items">Brak przedmiotów questowych na koniec rajdu.</p>
-          {% endif %}
-        </div>
-
-        {# --- Sekcja Utracone Ubezpieczone --- #}
-        <div class="section">
-          <h2>
-            <i class="fa-solid fa-shield-virus icon"></i> Utracone Ubezpieczone
-          </h2>
-          {% if data.lost_insured_items %}
-          <ul class="item-list">
-            {% for item in data.lost_insured_items %}
-            <li>
-              {{ item.name }} {% if item.count > 1 %}<span class="item-count"
-                >x{{ item.count }}</span
-              >{% endif %}
-            </li>
-            {% endfor %}
-          </ul>
-          {% else %}
-          <p class="no-items">
-            Żadne ubezpieczone przedmioty nie zostały utracone.
+  <div class="row g-5">
+    <div class="col-md-4 col-sm-12 border-end">
+      <h2 class="mb-4">Ostatni rajd</h2>
+      {% if latest_raid %}
+      <div class="card mb-3 shadow-lg">
+        {% if latest_raid.location %}
+        <img
+          src="{{ url_for('static', filename=get_map_image_url(latest_raid.location)) }}"
+          class="card-img-top"
+          alt="{{ latest_raid.location }}"
+        />
+        {% else %}
+        <img
+          src="{{ url_for('static', filename=get_map_image_url('unknown')) }}"
+          class="card-img-top"
+          alt="Nieznana mapa"
+        />
+        {% endif %}
+        <div class="card-body">
+          <h3 class="card-title">{{ latest_raid.location or 'Nieznana' }}</h3>
+          <p class="card-text">
+            <small class="text-body-secondary"
+              >Zakończono: {{ latest_raid.timestamp_formatted }}</small
+            >
           </p>
-          {% endif %}
         </div>
+        <ul class="list-group list-group-flush">
+          <li
+            class="list-group-item p-3 {% if latest_raid.raid_result == 'Survived' %}text-success-emphasis bg-success-subtle border-success-subtle{% elif latest_raid.raid_result == 'Killed' %}text-danger-emphasis bg-danger-subtle border-danger-subtle{% else %}text-warning-emphasis bg-warning-subtle border-warning-subtle{% endif %}"
+          >
+            <small>Status</small>
+            <h3 class="mb-0">{{ latest_raid.raid_result or 'N/A' }}</h3>
+          </li>
+          <li
+            class="list-group-item p-3 text-primary-emphasis bg-primary-subtle border border-primary-subtle"
+          >
+            <small>Gracz</small>
+            <h3 class="mb-0">
+              {% if latest_raid.nickname %}
+              <a
+                href="{{ url_for('player_details', nickname=latest_raid.nickname) }}"
+                class="link-primary text-decoration-none"
+                >{{ latest_raid.nickname }}</a
+              >
+              {% else %} Nieznany {% endif %}
+            </h3>
+          </li>
+          <li class="list-group-item p-3">
+            <small>Czas</small>
+            <h3 class="mb-0">{{ latest_raid.play_time_formatted }}</h3>
+          </li>
+          <li class="list-group-item p-3">
+            <ul class="list-group list-group-horizontal border-0">
+              <li class="list-group-item col border-0">
+                <small>Kille</small>
+                <h4 class="mb-0">{{ latest_raid.kills_count }}</h4>
+              </li>
+              {# Usunięto Bosses - brak danych #}
+              <li class="list-group-item col border-0">
+                <small>Wyjście</small>
+                <h4 class="mb-0">{{ latest_raid.exit_name or 'N/A' }}</h4>
+              </li>
+            </ul>
+          </li>
+        </ul>
       </div>
-      {# Koniec grid-container #} {% else %}
-      <p>Nie udało się załadować danych z pliku {{ filename }}.</p>
+      {% else %}
+      <p>Brak danych o ostatnim rajdzie.</p>
       {% endif %}
     </div>
-  </body>
-</html>
+
+    <div class="col-md-8 col-sm-12">
+      <h2 class="mb-4">Ostatnie rajdy (globalnie)</h2>
+      {% if recent_raids %}
+      <div class="table-responsive">
+        <table class="table table-striped table-hover text-center align-middle">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Nick</th>
+              <th scope="col">Lvl</th>
+              <th scope="col">Frakcja</th>
+              <th scope="col">Rajdy (Gracza)</th>
+              <th scope="col">Exp (Sesja)</th>
+              <th scope="col">Mapa</th>
+              <th scope="col">Profil Gracza</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for raid in recent_raids %}
+            <tr>
+              <th scope="row">{{ loop.index }}</th>
+              <td>{{ raid.nickname or 'N/A' }}</td>
+              <td>{{ raid.level or 'N/A' }}</td>
+              <td>{{ get_item_name(raid.side) }}</td>
+              {# Używamy get_item_name #}
+              <td>{{ raid.raid_count }}</td>
+              <td>{{ "{:,.0f}".format(raid.exp).replace(',', ' ') }}</td>
+              <td>{{ raid.location or 'N/A' }}</td>
+              <td>
+                {% if raid.nickname %}
+                <a
+                  href="{{ url_for('player_details', nickname=raid.nickname) }}"
+                  class="btn btn-secondary btn-sm"
+                  >zobacz</a
+                >
+                {% else %} - {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p>Brak ostatnich rajdów do wyświetlenia.</p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

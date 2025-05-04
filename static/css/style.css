@@ -1,0 +1,247 @@
+@font-face {
+        font-family: 'Bender';
+        src: url('/static/fonts/bender/Jovanny Lemonad - Bender.otf') format('opentype');
+        font-weight: 400;
+        /* Zmieniono na normal (400) */
+        font-style: normal;
+}
+
+@font-face {
+        font-family: 'Bender';
+        src: url('/static/fonts/bender/Jovanny Lemonad - Bender-Italic.otf') format('opentype');
+        font-weight: 400;
+        /* Zmieniono na normal (400) */
+        font-style: italic;
+}
+
+@font-face {
+        font-family: 'Bender';
+        src: url('/static/fonts/bender/Jovanny Lemonad - Bender-Bold.otf') format('opentype');
+        font-weight: 700;
+        /* Zmieniono na bold (700) */
+        font-style: normal;
+}
+
+@font-face {
+        font-family: 'Bender';
+        src: url('/static/fonts/bender/Jovanny Lemonad - Bender-BoldItalic.otf') format('opentype');
+        font-weight: 700;
+        /* Zmieniono na bold (700) */
+        font-style: italic;
+}
+
+@font-face {
+        font-family: 'Bender';
+        src: url('/static/fonts/bender/Jovanny Lemonad - Bender-Light.otf') format('opentype');
+        font-weight: 300;
+        /* Pozostawiono light (300) */
+        font-style: normal;
+}
+
+@font-face {
+        font-family: 'Bender';
+        src: url('/static/fonts/bender/Jovanny Lemonad - Bender-LightItalic.otf') format('opentype');
+        font-weight: 300;
+        /* Pozostawiono light (300) */
+        font-style: italic;
+}
+
+@font-face {
+        font-family: 'Bender';
+        src: url('/static/fonts/bender/Jovanny Lemonad - Bender-Black.otf') format('opentype');
+        font-weight: 900;
+        /* Pozostawiono black (900) */
+        font-style: normal;
+}
+
+@font-face {
+        font-family: 'Bender';
+        src: url('/static/fonts/bender/Jovanny Lemonad - Bender-BlackItalic.otf') format('opentype');
+        font-weight: 900;
+        /* Pozostawiono black (900) */
+        font-style: italic;
+}
+
+body {
+        font-size: 18px;
+        border-radius: 0;
+        font-family: "Ubuntu", sans-serif;
+        font-weight: 400;
+}
+
+small,
+.btn {
+        font-family: "Ubuntu", sans-serif;
+        font-weight: 400;
+}
+
+th,
+td {
+        font-family: "Bender", sans-serif;
+        font-weight: 700;
+}
+
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.fw-bold {
+        font-family: 'Bender', sans-serif;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        padding: 0;
+        margin: 0;
+}
+
+.card {
+        border-radius: 0;
+}
+
+.table>:not(caption)>*>* {
+        padding: 1rem;
+}
+
+.table-striped-columns>tbody>tr:first-child>* {
+        background: linear-gradient(135deg, #FFD700, #FFA500, #FFEC8B);
+        color: black;
+}
+
+.table-striped-columns>tbody>tr:nth-child(2)>* {
+        background: linear-gradient(135deg, #C0C0C0, #DCDCDC, #FFFFFF);
+        color: black;
+}
+
+.table-striped-columns>tbody>tr:nth-child(3)>* {
+        background: linear-gradient(135deg, #CD7F32, #A97142, #965A38);
+        color: black;
+}
+
+.list-group-item {
+        border-radius: 0 !important;
+}
+
+section {
+        position: relative;
+}
+
+.bear::before {
+        content: '';
+        background-image: url(/static/frakcja/bear.png);
+        background-repeat: no-repeat;
+        background-size: contain;
+        width: 300px;
+        height: 300px;
+        position: absolute;
+        top: 0;
+        left: -71px;
+        transform: translateX(-50%);
+        opacity: 0.01;
+        z-index: -1;
+}
+
+.usec::before {
+        content: '';
+        background-image: url('/static/frakcja/usec.png');
+        background-repeat: no-repeat;
+        background-size: contain;
+        width: 300px;
+        height: 300px;
+        position: absolute;
+        top: 0;
+        left: -71px;
+        transform: translateX(-50%);
+        opacity: 0.01;
+        z-index: -1;
+}
+
+.progress {
+        height: 45px;
+}
+
+.progress-bar {
+        font-family: 'Bender', sans-serif;
+        font-size: 1.3rem;
+        font-weight: 800;
+}
+
+.badge {
+        border-radius: 0 !important;
+        height: 100%;
+        font-family: 'Bender', sans-serif;
+        font-size: 1.3rem;
+}
+
+.bd-placeholder-img {
+        font-size: 1.125rem;
+        text-anchor: middle;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        user-select: none;
+}
+
+.modal-backdrop.show {
+        background-color: rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(15px);
+}
+
+
+
+@media (min-width: 768px) {
+        .bd-placeholder-img-lg {
+                font-size: 3.5rem;
+        }
+}
+
+.b-example-divider {
+        width: 100%;
+        height: 3rem;
+        background-color: rgba(0, 0, 0, .1);
+        border: solid rgba(0, 0, 0, .15);
+        border-width: 1px 0;
+        box-shadow: inset 0 .5em 1.5em rgba(0, 0, 0, .1), inset 0 .125em .5em rgba(0, 0, 0, .15);
+}
+
+.b-example-vr {
+        flex-shrink: 0;
+        width: 1.5rem;
+        height: 100vh;
+}
+
+.bi {
+        vertical-align: -.125em;
+        fill: currentColor;
+}
+
+.nav-scroller {
+        position: relative;
+        z-index: 2;
+        height: 2.75rem;
+        overflow-y: hidden;
+}
+
+.nav-scroller .nav {
+        display: flex;
+        flex-wrap: nowrap;
+        padding-bottom: 1rem;
+        margin-top: -1px;
+        overflow-x: auto;
+        text-align: center;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+}
+
+.bd-mode-toggle {
+        z-index: 1500;
+}
+
+.bd-mode-toggle .bi {
+        width: 1em;
+        height: 1em;
+}
+
+.bd-mode-toggle .dropdown-menu .active .bi {
+        display: block !important;
+}
