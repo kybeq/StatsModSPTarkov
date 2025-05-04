@@ -22,12 +22,13 @@ Aplikacja backendowa oparta na **Flask**, służąca do odbierania i analizowani
 
 Poniżej zrzuty ekranu z działania moda oraz interfejsu:
 
-| Podgląd | Opis |
-|--------|------|
-| ![screen1](./StatsModSPTarkov/Zrzut%20ekranu%202025-05-04%20161620.png) | Przykładowy ekran rajdu |
-| ![screen2](./StatsModSPTarkov/Zrzut%20ekranu%202025-05-04%20161702.png) | Szczegółowe statystyki gracza |
-| ![screen3](./StatsModSPTarkov/Zrzut%20ekranu%202025-05-04%20161718.png) | Statystyki wyciągnięte z rajdu |
-| ![screen4](./StatsModSPTarkov/Zrzut%20ekranu%202025-05-04%20161727.png) | Interfejs moda z przykładowym zapisem |
+| Podgląd 
+|--------
+| ![Zrzut 1](https://raw.githubusercontent.com/kybeq/StatsModSPTarkov/main/produkt/Zrzut%20ekranu%202025-05-04%20161620.png) 
+| ![Zrzut 2](https://raw.githubusercontent.com/kybeq/StatsModSPTarkov/main/produkt/Zrzut%20ekranu%202025-05-04%20161702.png) 
+| ![Zrzut 3](https://raw.githubusercontent.com/kybeq/StatsModSPTarkov/main/produkt/Zrzut%20ekranu%202025-05-04%20161718.png) 
+| ![Zrzut 4](https://raw.githubusercontent.com/kybeq/StatsModSPTarkov/main/produkt/Zrzut%20ekranu%202025-05-04%20161727.png) 
+
 
 ## 🔮 Planowane funkcje
 
