@@ -1,19 +1,16 @@
 {% extends "base.html" %} {% block title %}Profil Gracza: {{ nickname }} -
-StatsMods Tarkov{% endblock %} {% block content %} {# Sprawdzenie czy mamy dane
-gracza #} {% if player_info %} {# Dynamiczna klasa główna sekcji #}
+StatsMods Tarkov{% endblock %} {% block content %} {% if player_info %}
 <section
-  class="{% if player_info.latest_side == 'bear' %}bear{% elif player_info.latest_side == 'usec' %}usec{% else %}default-profile{% endif %}"
+  class="{% if player_info.latest_side == 'Bear' or player_info.latest_side == 'BEAR' or player_info.latest_side == 'bear' %}bear{% elif player_info.latest_side == 'Usec' or player_info.latest_side == 'USEC' or player_info.latest_side == 'usec' %}usec{% else %}default-profile{% endif %}"
 >
-  {# Górne karty z informacjami o graczu - dynamiczne klasy #}
+  {# Górne karty z informacjami o graczu #}
   <div class="row g-3 mb-4">
     <div class="col-md-4">
       <div class="card h-100">
-        {# Użyj klas danger dla BEAR, primary dla USEC/innych #}
         <div
-          class="card-body shadow-lg {% if player_info.latest_side == 'bear' %}text-danger-emphasis bg-danger-subtle border-danger-subtle{% else %}text-primary-emphasis bg-primary-subtle border-primary-subtle{% endif %}"
+          class="card-body shadow-lg {% if player_info.latest_side == 'Bear' or player_info.latest_side == 'BEAR' or player_info.latest_side == 'bear' %}text-danger-emphasis bg-danger-subtle border-danger-subtle{% else %}text-primary-emphasis bg-primary-subtle border-primary-subtle{% endif %}"
         >
           <h5>Name</h5>
-          {# Zachowuję 'Name' jak w Twoim kodzie #}
           <h1>{{ nickname }}</h1>
         </div>
       </div>
@@ -21,7 +18,7 @@ gracza #} {% if player_info %} {# Dynamiczna klasa główna sekcji #}
     <div class="col">
       <div class="card h-100">
         <div
-          class="card-body shadow {% if player_info.latest_side == 'bear' %}text-danger-emphasis bg-danger-subtle border-danger-subtle{% else %}text-primary-emphasis bg-primary-subtle border-primary-subtle{% endif %}"
+          class="card-body shadow {% if player_info.latest_side == 'Bear' or player_info.latest_side == 'BEAR' or player_info.latest_side == 'bear' %}text-danger-emphasis bg-danger-subtle border-danger-subtle{% else %}text-primary-emphasis bg-primary-subtle border-primary-subtle{% endif %}"
         >
           <h5>Frakcja</h5>
           <h1>{{ get_item_name(player_info.latest_side) }}</h1>
@@ -31,7 +28,7 @@ gracza #} {% if player_info %} {# Dynamiczna klasa główna sekcji #}
     <div class="col">
       <div class="card h-100">
         <div
-          class="card-body shadow {% if player_info.latest_side == 'bear' %}text-danger-emphasis bg-danger-subtle border-danger-subtle{% else %}text-primary-emphasis bg-primary-subtle border-primary-subtle{% endif %}"
+          class="card-body shadow {% if player_info.latest_side == 'Bear' or player_info.latest_side == 'BEAR' or player_info.latest_side == 'bear' %}text-danger-emphasis bg-danger-subtle border-danger-subtle{% else %}text-primary-emphasis bg-primary-subtle border-primary-subtle{% endif %}"
         >
           <h5>Poziom</h5>
           <h1>{{ player_info.latest_level or 'N/A' }}</h1>
@@ -41,26 +38,23 @@ gracza #} {% if player_info %} {# Dynamiczna klasa główna sekcji #}
     <div class="col">
       <div class="card h-100">
         <div
-          class="card-body shadow {% if player_info.latest_side == 'bear' %}text-danger-emphasis bg-danger-subtle border-danger-subtle{% else %}text-primary-emphasis bg-primary-subtle border-primary-subtle{% endif %}"
+          class="card-body shadow {% if player_info.latest_side == 'Bear' or player_info.latest_side == 'BEAR' or player_info.latest_side == 'bear' %}text-danger-emphasis bg-danger-subtle border-danger-subtle{% else %}text-primary-emphasis bg-primary-subtle border-primary-subtle{% endif %}"
         >
-          <h5>Total EXP</h5>
+          <h5>Total EXP (z rajdów)</h5>
           <h1>{{ player_info.latest_total_experience_formatted }}</h1>
-          {# Sformatowane w app.py #}
         </div>
       </div>
     </div>
   </div>
 
-  {# Drugi rząd kart ze statystykami - zachowuję Twoje klasy #}
+  {# Drugi rząd kart ze statystykami #}
   <div class="row g-3 my-1 mb-4">
-    {# Dodałem mb-4 dla spójności #}
     <div class="col">
       <div class="card h-100">
-        {# Dodałem h-100 dla równej wysokości #}
         <div
           class="card-body shadow text-info-emphasis bg-info-subtle border border-info-subtle"
         >
-          <h5>Sesje PMC</h5>
+          <h5>Sesje</h5>
           <h2>{{ player_stats.sessions }}</h2>
         </div>
       </div>
@@ -70,8 +64,7 @@ gracza #} {% if player_info %} {# Dynamiczna klasa główna sekcji #}
         <div
           class="card-body shadow text-success-emphasis bg-success-subtle border border-success-subtle"
         >
-          <h5>Survival</h5>
-          {# Przeżyte sesje #}
+          <h5>Przeżyte</h5>
           <h2>{{ player_stats.survived_sessions }}</h2>
         </div>
       </div>
@@ -81,8 +74,7 @@ gracza #} {% if player_info %} {# Dynamiczna klasa główna sekcji #}
         <div
           class="card-body shadow text-danger-emphasis bg-danger-subtle border border-danger-subtle"
         >
-          <h5>No Survival</h5>
-          {# Śmierci #}
+          <h5>Śmierci</h5>
           <h2>{{ player_stats.deaths }}</h2>
         </div>
       </div>
@@ -92,7 +84,7 @@ gracza #} {% if player_info %} {# Dynamiczna klasa główna sekcji #}
         <div
           class="card-body shadow text-info-emphasis bg-info-subtle border border-info-subtle"
         >
-          <h5>Total Kill</h5>
+          <h5>Zabójstwa</h5>
           <h2>{{ player_stats.kills }}</h2>
         </div>
       </div>
@@ -112,21 +104,17 @@ gracza #} {% if player_info %} {# Dynamiczna klasa główna sekcji #}
         <div
           class="card-body shadow text-info-emphasis bg-info-subtle border border-info-subtle"
         >
-          {# Zmieniam drugie SR na K/D #}
           <h5>K/D Ratio</h5>
           <h2>{{ player_stats.kd_ratio }}</h2>
         </div>
       </div>
     </div>
   </div>
-
   <hr class="col col-md-12 my-5" />
-
-  {# Sekcja z ostatnim rajdem i historią rajdów - taka sama dla obu #}
   <div class="row g-5">
     <div class="col-md-4 col-sm-12 border-end">
       <h1 class="mb-5">Ostatni rajd</h1>
-      {# Zachowuję H1 jak w Twoim kodzie #} {% if latest_raid %}
+      {% if latest_raid %}
       <div class="card mb-3 shadow-lg">
         {% if latest_raid.location %}
         <img
@@ -134,7 +122,7 @@ gracza #} {% if player_info %} {# Dynamiczna klasa główna sekcji #}
           class="img-fluid"
           alt="{{ latest_raid.location }}"
         />
-        {# Zmieniono na img-fluid #} {% else %}
+        {% else %}
         <img
           src="{{ url_for('static', filename=get_map_image_url('unknown')) }}"
           class="img-fluid"
@@ -143,7 +131,6 @@ gracza #} {% if player_info %} {# Dynamiczna klasa główna sekcji #}
         {% endif %}
         <div class="card-body">
           <h3 class="card-title">{{ latest_raid.location or 'Nieznana' }}</h3>
-          {# Format daty jak w Twoim kodzie #}
           <p class="card-text">
             <small class="text-body-secondary"
               >Zakończono: {{ latest_raid.timestamp_formatted }}</small
@@ -152,7 +139,7 @@ gracza #} {% if player_info %} {# Dynamiczna klasa główna sekcji #}
         </div>
         <ul class="list-group list-group-flush">
           <li
-            class="list-group-item p-3 {% if latest_raid.raid_result == 'Survived' %}text-success-emphasis bg-success-subtle border-success-subtle{% elif latest_raid.raid_result == 'Killed' %}text-danger-emphasis bg-danger-subtle border-danger-subtle{% else %}text-warning-emphasis bg-warning-subtle border-warning-subtle{% endif %}"
+            class="list-group-item p-3 {% if latest_raid.raid_result == get_item_name('Survived') or latest_raid.raid_result|lower == 'przetrwano' %}text-success-emphasis bg-success-subtle border-success-subtle{% elif latest_raid.raid_result == get_item_name('Killed') or latest_raid.raid_result|lower == 'zabity' %}text-danger-emphasis bg-danger-subtle border-danger-subtle{% else %}text-warning-emphasis bg-warning-subtle border-warning-subtle{% endif %}"
           >
             <small>Status</small>
             <h3>{{ latest_raid.raid_result or 'N/A' }}</h3>
@@ -161,19 +148,17 @@ gracza #} {% if player_info %} {# Dynamiczna klasa główna sekcji #}
             <small>Czas</small>
             <h3>{{ latest_raid.play_time_formatted }}</h3>
           </li>
-          {# Struktura listy poziomej jak w Twoim kodzie #}
           <ul class="list-group list-group-horizontal">
             <li class="list-group-item col border border-0">
-              <small>Total Kill</small>
+              <small>Zabójstwa w rajdzie</small>
               <h4>{{ latest_raid.kills_count }}</h4>
             </li>
-            {# Usunięto Bosses - brak danych #}
             <li class="list-group-item col border border-0">
-              <small>Exit</small>
-              {# Wyświetlaj tylko jeśli Survived #}
+              <small>Wyjście</small>
               <h4>
-                {{ latest_raid.exit_name if latest_raid.raid_result ==
-                'Survived' else '---' }}
+                {{ latest_raid.exit_name if (latest_raid.raid_result ==
+                get_item_name('Survived') or latest_raid.raid_result|lower ==
+                'przetrwano') else '---' }}
               </h4>
             </li>
           </ul>
@@ -185,9 +170,8 @@ gracza #} {% if player_info %} {# Dynamiczna klasa główna sekcji #}
     </div>
     <div class="col-md-8 col-sm-12">
       <h1 class="mb-5">Ostatnie rajdy</h1>
-      {# Zachowuję H1 #} {% if player_raids %}
+      {% if player_raids %}
       <div class="table-responsive">
-        {# Klasy tabeli jak w Twoim kodzie #}
         <table class="table table-striped text-center">
           <thead>
             <tr>
@@ -196,8 +180,8 @@ gracza #} {% if player_info %} {# Dynamiczna klasa główna sekcji #}
               <th scope="col">Mapa</th>
               <th scope="col">Wynik</th>
               <th scope="col">Czas</th>
-              <th scope="col">Kill</th>
-              <th scope="col">EXP</th>
+              <th scope="col">Kille</th>
+              <th scope="col">EXP (Sesja)</th>
               <th scope="col">Szczegóły</th>
             </tr>
           </thead>
@@ -210,16 +194,14 @@ gracza #} {% if player_info %} {# Dynamiczna klasa główna sekcji #}
               <td>{{ raid.raid_result or 'N/A' }}</td>
               <td>{{ raid.play_time_formatted }}</td>
               <td>{{ raid.kills_count }}</td>
-              {# Formatowanie EXP #}
               <td>{{ format_exp(raid.total_session_exp_calculated) }}</td>
               <td>
-                {# Przycisk modala, ID modala zmienione na raidDetailsModal #}
                 <button
                   type="button"
                   class="btn btn-secondary btn-sm open-raid-modal"
                   data-bs-toggle="modal"
                   data-bs-target="#raidDetailsModal"
-                  data-filename="{{ raid.filename }}"
+                  data-jsonpath-relative="{{ raid.data_json_path_relative }}"
                 >
                   zobacz
                 </button>
@@ -235,59 +217,55 @@ gracza #} {% if player_info %} {# Dynamiczna klasa główna sekcji #}
     </div>
   </div>
 
-  {# Sekcje tylko dla BEAR #} {% if player_info.latest_side == 'bear' %}
+  {# Sekcje tylko dla BEAR - lub usuń warunek, jeśli dla wszystkich #} {# {% if
+  player_info.latest_side == 'bear' or player_info.latest_side == 'Bear' %} #}
   <hr class="col col-md-12 my-5" />
-  {# Sekcja Umiejętności #}
   <section>
     <div class="row">
       <div class="col">
-        <h1 class="mb-5">Umiejętności</h1>
-        {# Zachowuję H1 #}
+        <h1 class="mb-5">Umiejętności (z ostatniego rajdu gracza)</h1>
       </div>
     </div>
-    {% if skills %}
+    {% if skills and skills|length > 0 %}
     <div class="row g-3">
-      {# Zmieniono na g-3 jak w Twoim kodzie #}
-      <div class="col">
-        {# Usunięto md-6 dla pełnej szerokości na mniejszych ekranach #}
+      <div class="col-md-6">
+        {# Użyj col-md-6 dla lepszego układu na większych ekranach #}
         <h4 class="mb-1 card p-3">Common</h4>
         <ol class="list-group">
-          {% for skill in skills if skill.SkillType == 'Common' %} {# Zachowuję
-          Twoją strukturę li #}
+          {% for skill in skills if skill.SkillType == 'Common' %}
           <li
             class="list-group-item d-flex justify-content-between align-items-start p-3 gap-5 shadow"
           >
             <div class="col">
-              {# Usunięto me-3 #}
               <div class="fw-bold fs-4 mb-2">{{ skill.SkillName }}</div>
-              {# Zachowuję fs-4 #} {# Twoja struktura progress bar #}
               <div
                 class="progress"
                 role="progressbar"
-                aria-label="Skill progress"
-                aria-valuenow="{{ skill.Progress }}"
+                aria-valuenow="{{ skill.Progress|float }}"
                 aria-valuemin="0"
                 aria-valuemax="100"
+                style="height: 20px"
               >
                 <div
                   class="progress-bar text-bg-info progress-bar-striped progress-bar-animated"
-                  style="width: {{ skill.Progress }}%"
+                  style="width: {{ skill.Progress|float }}%"
                 >
                   {{ skill.ProgressFormatted }}
                 </div>
               </div>
             </div>
-            {# Twój badge #}
-            <span class="badge text-bg-info border-0 p-3"
+            <span class="badge text-bg-info border-0 p-3 fs-6"
               >+{{ skill.PointsEarnedFormatted }}</span
             >
           </li>
           {% else %}
-          <li class="list-group-item">Brak zmian w umiejętnościach Common.</li>
+          <li class="list-group-item">
+            Brak zmian w umiejętnościach Common w ostatnim rajdzie.
+          </li>
           {% endfor %}
         </ol>
       </div>
-      <div class="col">
+      <div class="col-md-6">
         <h4 class="mb-1 card p-3">Mastering</h4>
         <ol class="list-group">
           {% for skill in skills if skill.SkillType == 'Mastering' %}
@@ -299,83 +277,81 @@ gracza #} {% if player_info %} {# Dynamiczna klasa główna sekcji #}
               <div
                 class="progress"
                 role="progressbar"
-                aria-label="Skill progress"
-                aria-valuenow="{{ skill.Progress }}"
+                aria-valuenow="{{ skill.Progress|float }}"
                 aria-valuemin="0"
                 aria-valuemax="100"
+                style="height: 20px"
               >
-                {# Używam warning dla Mastering dla odróżnienia #}
                 <div
                   class="progress-bar text-bg-warning progress-bar-striped progress-bar-animated"
-                  style="width: {{ skill.Progress }}%"
+                  style="width: {{ skill.Progress|float }}%"
                 >
                   {{ skill.ProgressFormatted }}
                 </div>
               </div>
             </div>
-            <span class="badge text-bg-warning border-0 p-3">
-              {# text-bg-warning #} {% if skill.PointsEarnedFormatted != 'N/A'
-              and skill.PointsEarnedFormatted != '0.00' %} +{{
-              skill.PointsEarnedFormatted }} {% else %} --- {# Placeholder jeśli
-              brak pkt #} {% endif %}
+            <span class="badge text-bg-warning border-0 p-3 fs-6">
+              {% if skill.PointsEarnedFormatted != 'N/A' and
+              skill.PointsEarnedFormatted != '0.00' and
+              skill.PointsEarnedFormatted != '0' %} +{{
+              skill.PointsEarnedFormatted }} {% else %} Poziom {{
+              skill.ProgressFormatted }} {% endif %}
             </span>
           </li>
           {% else %}
           <li class="list-group-item">
-            Brak zmian w umiejętnościach Mastering.
+            Brak zmian w umiejętnościach Mastering w ostatnim rajdzie.
           </li>
           {% endfor %}
         </ol>
       </div>
     </div>
     {% else %}
-    <p>Brak danych o zmianach umiejętności w ostatnim rajdzie.</p>
+    <p>Brak danych o zmianach umiejętności w ostatnim rajdzie tego gracza.</p>
     {% endif %}
   </section>
 
   <hr class="col col-md-12 my-5" />
-
-  {# Sekcja Achievements #}
   <section>
     <div class="row">
       <div class="col">
-        <h1 class="mb-5">Achievements</h1>
-        {# Zachowuję H1 #}
+        <h1 class="mb-5">Osiągnięcia (z profilu gracza)</h1>
       </div>
     </div>
-    {# Zachowuję Twoją strukturę dla achievements #}
     <div class="row g-3">
-      {# Dodałem g-3 #} {% if achievements %} {% for achievement in achievements
-      %}
-      <div class="col">
-        {# Usunięto col-auto, pozwoli Bootstrapowi rozłożyć karty #}
+      {% if achievements and achievements|length > 0 %} {% for achievement in
+      achievements %}
+      <div class="col-md-auto">
         <div class="card text-center shadow" style="width: 10rem">
-          {# Zakładam, że masz ID w achievement, dostosuj jeśli trzeba #}
           <img
-            src="{{ url_for('static', filename='achievements/' + achievement.id + '.png') }}"
+            src="{{ url_for('static', filename='achievements/' + (achievement.id if achievement.id else 'unknown') + '.png') }}"
             class="card-img p-2"
             alt="{{ achievement.name }}"
+            onerror="this.onerror=null; this.src='{{ url_for('static', filename='achievements/unknown.png') }}';"
           />
-          {# Zmieniono card-img na card-img-top? Raczej nie, zostawiam card-img
-          #}
           <div class="card-body py-2">
-            {# Zmniejszono padding pionowy #} {# Zmieniono h5 na h6 dla
-            mniejszego fontu #}
-            <h6 class="card-title small">{{ achievement.name }}</h6>
+            <h6
+              class="card-title small"
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              title="Zdobyto: {{ achievement.timestamp if achievement.timestamp != 'N/A' else 'Brak daty' }}"
+            >
+              {{ achievement.name }}
+            </h6>
           </div>
         </div>
       </div>
       {% endfor %} {% else %}
       <div class="col">
-        <p>Brak osiągnięć do wyświetlenia.</p>
+        <p>Brak osiągnięć do wyświetlenia dla tego gracza.</p>
       </div>
       {% endif %}
     </div>
   </section>
-  {% endif %} {# Koniec sekcji tylko dla BEAR #}
+  {# {% endif %} #} {# Koniec warunku if player_info.latest_side == 'bear' #}
 </section>
-{# Koniec głównej sekcji profilu #} {# Modal - ID zmienione na raidDetailsModal,
-reszta struktury jak w poprzedniej wersji #}
+
+{# Modal "Szczegóły Rajdu" #}
 <div
   class="modal fade"
   id="raidDetailsModal"
@@ -388,7 +364,6 @@ reszta struktury jak w poprzedniej wersji #}
   >
     <div class="modal-content rounded-0 p-3">
       <div class="modal-header border-0">
-        {# Tytuł modala będzie ustawiany przez JS #}
         <h1 class="modal-title fs-4" id="raidDetailsModalLabel">
           Szczegóły rajdu
         </h1>
@@ -400,26 +375,20 @@ reszta struktury jak w poprzedniej wersji #}
         ></button>
       </div>
       <div class="modal-body" id="raidModalBody">
-        {# --- Loader --- #}
         <div class="d-flex justify-content-center my-5" id="modalLoader">
           <div class="spinner-border" role="status">
             <span class="visually-hidden">Ładowanie...</span>
           </div>
         </div>
-        {# --- Error Message --- #}
         <div class="alert alert-danger d-none" role="alert" id="modalError">
           Nie udało się załadować danych rajdu.
         </div>
-        {# --- Content (initially hidden) --- #}
         <div id="modalContent" class="d-none">
-          {# Sekcja Ofiar - struktura jak w Twoim kodzie #}
           <h4 class="mb-3">
             Ofiary gracza (<span id="modal-kills-count">0</span>)
           </h4>
           <div class="table-responsive mb-4">
-            {# Dodano mb-4 #}
             <table class="table table-striped text-center">
-              {# Twoje klasy #}
               <thead>
                 <tr>
                   <th scope="col">#</th>
@@ -427,33 +396,24 @@ reszta struktury jak w poprzedniej wersji #}
                   <th scope="col">LVL</th>
                   <th scope="col">Frakcja</th>
                   <th scope="col">GUN</th>
-                  {# Rola? #}
                   <th scope="col">Distance</th>
                   <th scope="col">Where</th>
-                  {# BodyPart #}
                 </tr>
               </thead>
-              <tbody id="modal-victims-table">
-                {# Wiersze będą dodane przez JS, dopasowane do tych nagłówków #}
-              </tbody>
+              <tbody id="modal-victims-table"></tbody>
             </table>
             <p id="modal-no-victims" class="text-center text-muted d-none">
               Brak ofiar w tym rajdzie.
             </p>
           </div>
-
-          {# Podstawowe info rajdu - struktura jak w Twoim kodzie #}
           <div class="row g-3 mb-4">
-            {# Dodano mb-4 #}
             <div class="col">
               <div class="card">
-                {# Klasa karty wyniku będzie ustawiana dynamicznie przez JS #}
                 <div
                   class="card-body shadow-lg shadow"
                   id="modal-raid-result-card"
                 >
                   <h5>Wynik</h5>
-                  {# Zmieniono Wyjście na Wynik #}
                   <hr />
                   <h2 id="modal-raid-result">N/A</h2>
                 </div>
@@ -463,7 +423,6 @@ reszta struktury jak w poprzedniej wersji #}
               <div class="card">
                 <div class="card-body shadow">
                   <h5>Wyjście</h5>
-                  {# Dodano kartę Wyjście #}
                   <hr />
                   <h2 id="modal-exit-name">N/A</h2>
                 </div>
@@ -490,33 +449,25 @@ reszta struktury jak w poprzedniej wersji #}
             <div class="col">
               <div class="card">
                 <div class="card-body shadow">
-                  <h5>Graczy</h5>
+                  <h5>Graczy (w rajdzie)</h5>
                   <hr />
                   <h2 id="modal-player-count">N/A</h2>
                 </div>
               </div>
             </div>
           </div>
-
-          {# Info o zabójcy (jeśli dotyczy) - Struktura Kafelków #}
           <div id="modal-killer-info-section" class="mb-4 d-none">
             <h4 class="mb-3 text-danger">Informacje o zabójcy</h4>
             <div class="row g-3">
-              {# Używamy row i col jak w innych sekcjach #}
-
               <div class="col">
                 <div class="card h-100 bg-danger-subtle border-danger">
-                  {# Dodano h-100 dla równej wysokości #}
                   <div class="card-body shadow">
-                    {# Twoja klasa shadow #}
                     <h5>Nick</h5>
                     <hr />
                     <h2 id="modal-killer-name">N/A</h2>
-                    {# Używamy H2 jak w Twoim przykładzie #}
                   </div>
                 </div>
               </div>
-
               <div class="col">
                 <div class="card h-100 bg-danger-subtle border-danger">
                   <div class="card-body shadow">
@@ -526,7 +477,6 @@ reszta struktury jak w poprzedniej wersji #}
                   </div>
                 </div>
               </div>
-
               <div class="col">
                 <div class="card h-100 bg-danger-subtle border-danger">
                   <div class="card-body shadow">
@@ -536,7 +486,6 @@ reszta struktury jak w poprzedniej wersji #}
                   </div>
                 </div>
               </div>
-
               <div class="col">
                 <div class="card h-100 bg-danger-subtle border-danger">
                   <div class="card-body shadow">
@@ -546,7 +495,6 @@ reszta struktury jak w poprzedniej wersji #}
                   </div>
                 </div>
               </div>
-
               <div class="col">
                 <div class="card h-100 bg-danger-subtle border-danger">
                   <div class="card-body shadow">
@@ -556,21 +504,19 @@ reszta struktury jak w poprzedniej wersji #}
                   </div>
                 </div>
               </div>
-
               <div class="col">
                 <div class="card h-100 bg-danger-subtle border-danger">
                   <div class="card-body shadow">
-                    <h5>Obrażenia</h5>
+                    <h5>Obrażenia (lethal)</h5>
                     <hr />
                     <h2 id="modal-killer-damage">N/A</h2>
                   </div>
                 </div>
               </div>
-
               <div class="col">
                 <div class="card h-100 bg-danger-subtle border-danger">
                   <div class="card-body shadow">
-                    <h5>Typ Obrażeń</h5>
+                    <h5>Typ Obrażeń (lethal)</h5>
                     <hr />
                     <h2 id="modal-killer-damagetype">N/A</h2>
                   </div>
@@ -578,15 +524,12 @@ reszta struktury jak w poprzedniej wersji #}
               </div>
             </div>
           </div>
-
-          {# Statystyki Sesji - struktura jak w Twoim kodzie #}
+          <h5 class="py-3">Statystyki Sesji</h5>
           <div class="row g-3 mt-1">
-            {# Twoje klasy #}
-            <h5 class="py-3">Statystyki Sesji</h5>
             <div class="col">
               <div class="card">
                 <div class="card-body shadow-lg">
-                  <h6>EXP</h6>
+                  <h6>EXP (Suma K+L+E)</h6>
                   <hr />
                   <h3 id="modal-exp-total">0</h3>
                 </div>
@@ -595,7 +538,7 @@ reszta struktury jak w poprzedniej wersji #}
             <div class="col">
               <div class="card">
                 <div class="card-body shadow">
-                  <h6>EXP (JSON)</h6>
+                  <h6>EXP (TotalSession)</h6>
                   <hr />
                   <h3 id="modal-exp-json">0</h3>
                 </div>
@@ -604,7 +547,7 @@ reszta struktury jak w poprzedniej wersji #}
             <div class="col">
               <div class="card">
                 <div class="card-body shadow">
-                  <h6>Mnożnik</h6>
+                  <h6>Mnożnik EXP</h6>
                   <hr />
                   <h3 id="modal-exp-mult">1x</h3>
                 </div>
@@ -613,7 +556,7 @@ reszta struktury jak w poprzedniej wersji #}
             <div class="col">
               <div class="card">
                 <div class="card-body shadow">
-                  <h6>Bonus</h6>
+                  <h6>Bonus EXP</h6>
                   <hr />
                   <h3 id="modal-exp-bonus">1x</h3>
                 </div>
@@ -622,7 +565,7 @@ reszta struktury jak w poprzedniej wersji #}
             <div class="col">
               <div class="card">
                 <div class="card-body shadow">
-                  <h6>Zabójstwa</h6>
+                  <h6>EXP Zabójstwa</h6>
                   <hr />
                   <h3 id="modal-exp-kill">0</h3>
                 </div>
@@ -631,7 +574,7 @@ reszta struktury jak w poprzedniej wersji #}
             <div class="col">
               <div class="card">
                 <div class="card-body shadow">
-                  <h6>Przeszukiwanie</h6>
+                  <h6>EXP Przeszuk.</h6>
                   <hr />
                   <h3 id="modal-exp-loot">0</h3>
                 </div>
@@ -640,22 +583,19 @@ reszta struktury jak w poprzedniej wersji #}
             <div class="col">
               <div class="card">
                 <div class="card-body shadow">
-                  <h6>Wyjścia</h6>
+                  <h6>EXP Wyjścia</h6>
                   <hr />
                   <h3 id="modal-exp-exit">0</h3>
                 </div>
               </div>
             </div>
           </div>
-
-          {# Walka i Ruch - struktura jak w Twoim kodzie #}
+          <h5 class="py-3">Walka i Ruch</h5>
           <div class="row g-3 mt-1">
-            {# Twoje klasy #}
-            <h5 class="py-3">Walka i Ruch</h5>
             <div class="col">
               <div class="card">
                 <div class="card-body shadow-lg">
-                  <h6>Zadane</h6>
+                  <h6>Obraż. Zadane</h6>
                   <hr />
                   <h3 id="modal-dmg-dealt">0</h3>
                 </div>
@@ -664,7 +604,7 @@ reszta struktury jak w poprzedniej wersji #}
             <div class="col">
               <div class="card">
                 <div class="card-body shadow">
-                  <h6>Otrzymane</h6>
+                  <h6>Obraż. Otrzymane</h6>
                   <hr />
                   <h3 id="modal-dmg-received">0</h3>
                 </div>
@@ -673,7 +613,7 @@ reszta struktury jak w poprzedniej wersji #}
             <div class="col">
               <div class="card">
                 <div class="card-body shadow">
-                  <h6>Dystans</h6>
+                  <h6>Dystans (Pedometer)</h6>
                   <hr />
                   <h3 id="modal-distance">0 m</h3>
                 </div>
@@ -691,61 +631,37 @@ reszta struktury jak w poprzedniej wersji #}
             <div class="col">
               <div class="card">
                 <div class="card-body shadow">
-                  <h6>Śmierci w Sesji</h6>
+                  <h6>Śmierci (w Sesji)</h6>
                   <hr />
                   <h3 id="modal-deaths">0</h3>
                 </div>
               </div>
             </div>
           </div>
-
-          {# Otrzymane Obrażenia - Szczegóły - struktura jak w Twoim kodzie #}
-          <div class="row g-3 mt-1">
-            {# Twoje klasy #}
-            <h5 class="py-3">Otrzymane Obrażenia</h5>
-            {# Tutaj dynamicznie wstawimy karty z JS #}
-            <div class="row g-3" id="modal-dmg-received-details">
-              {# Przykład karty, JS wygeneruje resztę #}
-              <p
-                id="modal-no-dmg-received"
-                class="text-center text-muted d-none"
-              >
-                Brak otrzymanych obrażeń.
-              </p>
-              {#
-              <div class="col">
-                <div class="card">
-                  <div class="card-body shadow">
-                    <h6>GŁOWA</h6>
-                    <hr />
-                    <h3>351</h3>
-                  </div>
-                </div>
-              </div>
-              #}
-            </div>
+          <h5 class="py-3">Otrzymane Obrażenia (szczegóły)</h5>
+          <div class="row g-3 mt-1" id="modal-dmg-received-details">
+            <p id="modal-no-dmg-received" class="text-center text-muted d-none">
+              Brak otrzymanych obrażeń.
+            </p>
           </div>
-
-          {# Końcowe zdrowie - struktura jak w Twoim kodzie #}
           <div class="row mt-5">
-            <div class="col-6">
-              {# Używam col-6 jak w Twoim kodzie #}
+            <div class="col-md-6">
               <h4 class="mb-1 card p-3">Końcowe Zdrowie i Witalność</h4>
-              <ol class="list-group" id="modal-vitals-list">
-                {# Paski progress będą dodane przez JS, zachowując Twoją
-                strukturę li #}
-              </ol>
+              <ol class="list-group" id="modal-vitals-list"></ol>
             </div>
-            <div class="col-6">
+            <div class="col-md-6">
               <h4 class="mb-1 card p-3">Zdrowie Części Ciała</h4>
-              <ol class="list-group" id="modal-bodyparts-list">
-                {# Paski progress będą dodane przez JS, zachowując Twoją
-                strukturę li #}
-              </ol>
+              <ol class="list-group" id="modal-bodyparts-list"></ol>
             </div>
           </div>
-
-          {# Przedmioty - uproszczona lista (nowa sekcja) #}
+          <hr class="my-5" />
+          <h4 class="mb-3">Umiejętności (zmiany w sesji / wszystkie)</h4>
+          {# Zmieniono tytuł #}
+          <div id="modal-skills-section">
+            <p id="modal-no-skills-changed" class="text-muted d-none">
+              Brak danych o umiejętnościach.
+            </p>
+          </div>
           <hr class="my-5" />
           <div class="row mt-4">
             <div class="col-md-6 mb-4">
@@ -757,7 +673,7 @@ reszta struktury jak w poprzedniej wersji #}
               <p id="modal-no-found-items" class="text-muted d-none">Brak</p>
             </div>
             <div class="col-md-6 mb-4">
-              <h4 class="mb-3">Przeniesione (loot)</h4>
+              <h4 class="mb-3">Przeniesione (loot Scava)</h4>
               <ul
                 class="list-group list-group-flush"
                 id="modal-transfer-items"
@@ -784,46 +700,38 @@ reszta struktury jak w poprzedniej wersji #}
             </div>
           </div>
         </div>
-        {# End modalContent #}
       </div>
-      {# End modal-body #}
     </div>
   </div>
 </div>
-
 {% else %}
 <div class="alert alert-danger" role="alert">
   Nie znaleziono informacji o graczu: {{ nickname }}
 </div>
-{% endif %} {# End if player_info #} {% endblock %} {% block scripts %} {{
-super() }} {# Zachowaj skrypty z base.html jeśli są #} {# Ten sam skrypt co w
-poprzedniej wersji, obsługuje modal #}
+{% endif %} {% endblock %} {% block scripts %} {{ super() }}
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const raidDetailsModal = document.getElementById("raidDetailsModal");
-    // Sprawdź, czy modal istnieje na stronie, zanim dodasz event listener
-    if (!raidDetailsModal) return;
+    if (!raidDetailsModal) {
+      console.error("MODAL SCRIPT: Element #raidDetailsModal nie znaleziony!");
+      return;
+    }
 
-    const modalBody = document.getElementById("raidModalBody");
     const modalLoader = document.getElementById("modalLoader");
     const modalError = document.getElementById("modalError");
     const modalContent = document.getElementById("modalContent");
     const modalTitle = document.getElementById("raidDetailsModalLabel");
 
-    // Elementy do wypełnienia w modalu (kompletna lista)
     const elements = {
-      // Victims
       killsCount: document.getElementById("modal-kills-count"),
       victimsTable: document.getElementById("modal-victims-table"),
       noVictims: document.getElementById("modal-no-victims"),
-      // Raid Info Cards (Your Structure)
       raidResult: document.getElementById("modal-raid-result"),
-      raidResultCard: document.getElementById("modal-raid-result-card"), // Karta dla dynamicznych klas
+      raidResultCard: document.getElementById("modal-raid-result-card"),
       exitName: document.getElementById("modal-exit-name"),
       survivorClass: document.getElementById("modal-survivor-class"),
-      playTime: document.getElementById("modal-play-time"), // Karta Czas
+      playTime: document.getElementById("modal-play-time"),
       playerCount: document.getElementById("modal-player-count"),
-      // Killer Info (Definition List Structure)
       killerInfoSection: document.getElementById("modal-killer-info-section"),
       killerName: document.getElementById("modal-killer-name"),
       killerRole: document.getElementById("modal-killer-role"),
@@ -832,27 +740,24 @@ poprzedniej wersji, obsługuje modal #}
       killerBodypart: document.getElementById("modal-killer-bodypart"),
       killerDamage: document.getElementById("modal-killer-damage"),
       killerDamageType: document.getElementById("modal-killer-damagetype"),
-      // Session Stats Cards (Your Structure)
-      expTotal: document.getElementById("modal-exp-total"), // h3 w karcie EXP
-      expJson: document.getElementById("modal-exp-json"), // h3 w karcie EXP (JSON)
-      expMult: document.getElementById("modal-exp-mult"), // h3 w karcie Mnożnik
-      expBonus: document.getElementById("modal-exp-bonus"), // h3 w karcie Bonus
-      expKill: document.getElementById("modal-exp-kill"), // h3 w karcie Zabójstwa
-      expLoot: document.getElementById("modal-exp-loot"), // h3 w karcie Przeszukiwanie
-      expExit: document.getElementById("modal-exp-exit"), // h3 w karcie Wyjścia
-      // Combat & Movement Cards (Your Structure)
-      dmgDealt: document.getElementById("modal-dmg-dealt"), // h3 w karcie Zadane
-      dmgReceived: document.getElementById("modal-dmg-received"), // h3 w karcie Otrzymane
-      distance: document.getElementById("modal-distance"), // h3 w karcie Dystans
-      bloodloss: document.getElementById("modal-bloodloss"), // h3 w karcie Utrata Krwi
-      deaths: document.getElementById("modal-deaths"), // h3 w karcie Śmierci w Sesji
-      // Received Damage Details (Card Container)
-      dmgReceivedDetails: document.getElementById("modal-dmg-received-details"), // div dla kart
-      noDmgReceived: document.getElementById("modal-no-dmg-received"), // <p> jeśli brak obrażeń
-      // Health & Vitals (List Groups)
-      vitalsList: document.getElementById("modal-vitals-list"), // ol dla witalności
-      bodypartsList: document.getElementById("modal-bodyparts-list"), // ol dla części ciała
-      // Items (List Groups)
+      expTotal: document.getElementById("modal-exp-total"),
+      expJson: document.getElementById("modal-exp-json"),
+      expMult: document.getElementById("modal-exp-mult"),
+      expBonus: document.getElementById("modal-exp-bonus"),
+      expKill: document.getElementById("modal-exp-kill"),
+      expLoot: document.getElementById("modal-exp-loot"),
+      expExit: document.getElementById("modal-exp-exit"),
+      dmgDealt: document.getElementById("modal-dmg-dealt"),
+      dmgReceived: document.getElementById("modal-dmg-received"),
+      distance: document.getElementById("modal-distance"),
+      bloodloss: document.getElementById("modal-bloodloss"),
+      deaths: document.getElementById("modal-deaths"),
+      dmgReceivedDetails: document.getElementById("modal-dmg-received-details"),
+      noDmgReceived: document.getElementById("modal-no-dmg-received"),
+      vitalsList: document.getElementById("modal-vitals-list"),
+      bodypartsList: document.getElementById("modal-bodyparts-list"),
+      skillsSection: document.getElementById("modal-skills-section"),
+      noSkillsChanged: document.getElementById("modal-no-skills-changed"),
       foundItems: document.getElementById("modal-found-items"),
       noFoundItems: document.getElementById("modal-no-found-items"),
       transferItems: document.getElementById("modal-transfer-items"),
@@ -863,312 +768,298 @@ poprzedniej wersji, obsługuje modal #}
       noLostItems: document.getElementById("modal-no-lost-items"),
     };
 
-    // Funkcja pomocnicza do czyszczenia/resetowania modala
+    function setText(element, value, defaultValue = "N/A") {
+      if (element) {
+        element.textContent =
+          value !== null && value !== undefined && value !== ""
+            ? value
+            : defaultValue;
+      } else {
+        // console.warn("setText: Próba ustawienia tekstu na nieistniejącym elemencie.");
+      }
+    }
+    function setHtml(element, htmlContent) {
+      if (element) {
+        element.innerHTML = htmlContent;
+      } else {
+        // console.warn("setHtml: Próba ustawienia HTML na nieistniejącym elemencie.");
+      }
+    }
+
     function resetModal() {
       if (modalLoader) modalLoader.classList.remove("d-none");
       if (modalError) modalError.classList.add("d-none");
       if (modalContent) modalContent.classList.add("d-none");
-      if (modalTitle) modalTitle.textContent = "Szczegóły rajdu";
-
-      // Resetuj zawartość dynamicznych elementów
+      setText(modalTitle, "Szczegóły rajdu");
       for (const key in elements) {
         const el = elements[key];
-        if (!el) continue; // Pomiń, jeśli element nie istnieje
-
-        if (key.startsWith("no")) {
-          // dla elementów <p> "Brak..."
-          el.classList.add("d-none");
-        } else if (
+        if (!el) continue;
+        if (key.startsWith("no")) el.classList.add("d-none");
+        else if (
           el.tagName === "TBODY" ||
           el.tagName === "OL" ||
-          key === "dmgReceivedDetails"
-        ) {
-          el.innerHTML = ""; // Wyczyść listy, tabele, kontenery kart
-        } else if (key === "killerInfoSection") {
-          el.classList.add("d-none"); // Ukryj sekcję zabójcy
-        } else if (key === "raidResultCard") {
-          el.className = "card-body shadow-lg shadow"; // Reset klasy karty wyniku do bazowej z Twojego HTML
-        } else if (
-          el.tagName === "DD" ||
-          el.tagName === "H2" ||
-          el.tagName === "H3" ||
-          el.tagName === "SPAN"
-        ) {
-          el.textContent = "N/A"; // Resetuj tekst w elementach tekstowych
-          if (key === "killsCount") el.textContent = "0"; // Specjalny reset dla licznika killi
+          key === "dmgReceivedDetails" ||
+          key === "skillsSection"
+        )
+          el.innerHTML = "";
+        else if (key === "killerInfoSection") el.classList.add("d-none");
+        else if (key === "raidResultCard")
+          el.className = "card-body shadow-lg shadow";
+        else {
+          // Dla H2, H3, SPAN itp.
+          setText(el, "N/A");
+          if (key === "killsCount") setText(el, "0");
         }
       }
     }
 
-    // Funkcja do formatowania liczb
-    function formatNumber(num) {
-      if (num === null || num === undefined) return "N/A";
-      // Sprawdź czy to liczba przed formatowaniem
+    function formatNumberForJS(num) {
+      // Zmieniono nazwę, aby uniknąć konfliktu z Jinja
+      if (num === null || num === undefined || num === "") return "0";
       const numValue = Number(num);
-      if (isNaN(numValue)) return num.toString(); // Zwróć jako string jeśli nie jest liczbą
-      // Użyj toLocaleString dla separatorów tysięcy
-      return numValue.toLocaleString("pl-PL");
+      if (isNaN(numValue)) {
+        // Jeśli nie jest liczbą, spróbuj usunąć spacje i ponownie
+        const cleanedNum = String(num).replace(/\s/g, "");
+        const cleanedNumValue = Number(cleanedNum);
+        if (isNaN(cleanedNumValue)) return String(num); // Zwróć oryginał, jeśli nadal nie jest liczbą
+        return cleanedNumValue
+          .toLocaleString("pl-PL", { useGrouping: true })
+          .replace(/,/g, " ");
+      }
+      return numValue
+        .toLocaleString("pl-PL", { useGrouping: true })
+        .replace(/,/g, " ");
     }
 
-    // Funkcja do tworzenia paska postępu (zgodna z Twoją strukturą li dla witalności)
     function createProgressBarVitals(label, current, max) {
       const currentNum = Number(current);
       const maxNum = Number(max);
-      if (isNaN(currentNum) || isNaN(maxNum)) return ""; // Pomiń jeśli dane są nieprawidłowe
-
-      const percentage =
-        maxNum > 0 ? Math.min(100, (currentNum / maxNum) * 100) : 0;
-      const displayValue = `${formatNumber(
+      if (isNaN(currentNum) || isNaN(maxNum) || maxNum <= 0)
+        return `<li class="list-group-item">${label}: N/A</li>`;
+      const percentage = Math.min(100, (currentNum / maxNum) * 100);
+      const displayValue = `${formatNumberForJS(
         Math.round(currentNum)
-      )} / ${formatNumber(maxNum)}`;
-      // Używa klas i struktury z Twojego profil-bear.html
-      return `
-            <li class="list-group-item d-flex justify-content-between align-items-start p-3 shadow">
-                <div class="col">
-                    <div class="fw-bold fs-4 mb-2">${label}</div>
-                    <div class="progress" role="progressbar" aria-valuenow="${currentNum}" aria-valuemin="0" aria-valuemax="${maxNum}">
-                        <div class="progress-bar text-bg-info progress-bar-striped progress-bar-animated" style="width: ${percentage}%">${displayValue}</div>
-                    </div>
-                </div>
-            </li>`;
+      )} / ${formatNumberForJS(maxNum)}`;
+      return `<li class="list-group-item d-flex justify-content-between align-items-start p-3 shadow"><div class="col"><div class="fw-bold fs-4 mb-2">${label}</div><div class="progress" role="progressbar" aria-valuenow="${currentNum}" aria-valuemin="0" aria-valuemax="${maxNum}" style="height: 20px;"><div class="progress-bar text-bg-info progress-bar-striped progress-bar-animated" style="width: ${percentage}%">${displayValue}</div></div></div></li>`;
     }
 
-    // Funkcja do tworzenia paska postępu (zgodna z Twoją strukturą li dla części ciała)
-    function createProgressBarBody(label, current, max) {
+    function createProgressBarBody(label, current, max, effects = []) {
       const currentNum = Number(current);
       const maxNum = Number(max);
-      if (isNaN(currentNum) || isNaN(maxNum)) return "";
-
-      const percentage =
-        maxNum > 0 ? Math.min(100, (currentNum / maxNum) * 100) : 0;
-      const displayValue = `${currentNum.toFixed(1)} / ${maxNum}`; // Formatowanie do 1 miejsca po przecinku
-      // Używa klas i struktury z Twojego profil-bear.html
-      return `
-            <li class="list-group-item d-flex justify-content-between align-items-start p-3 shadow">
-                <div class="col">
-                    <div class="fw-bold fs-4 mb-2">${label}</div>
-                    <div class="progress" role="progressbar" aria-valuenow="${currentNum}" aria-valuemin="0" aria-valuemax="${maxNum}">
-                        <div class="progress-bar text-bg-info progress-bar-striped progress-bar-animated" style="width: ${percentage}%">${displayValue}</div>
-                    </div>
-                </div>
-            </li>`;
+      if (isNaN(currentNum) || isNaN(maxNum) || maxNum <= 0)
+        return `<li class="list-group-item">${label}: N/A</li>`;
+      const percentage = Math.min(100, (currentNum / maxNum) * 100);
+      const displayValue = `${currentNum.toFixed(1)} / ${maxNum}`;
+      let effectsHtml = "";
+      if (
+        effects &&
+        effects.length > 0 &&
+        effects.some((e) => e && e.trim() !== "" && e.trim() !== "N/A")
+      ) {
+        effectsHtml = ` <small class="text-warning">(${effects
+          .filter((e) => e && e.trim() !== "" && e.trim() !== "N/A")
+          .join(", ")})</small>`;
+      }
+      return `<li class="list-group-item d-flex justify-content-between align-items-start p-3 shadow"><div class="col"><div class="fw-bold fs-4 mb-2">${label}${effectsHtml}</div><div class="progress" role="progressbar" aria-valuenow="${currentNum}" aria-valuemin="0" aria-valuemax="${maxNum}" style="height: 20px;"><div class="progress-bar text-bg-info progress-bar-striped progress-bar-animated" style="width: ${percentage}%">${displayValue}</div></div></div></li>`;
     }
 
-    // Funkcja do tworzenia listy przedmiotów
-    function createItemList(items) {
-      if (!items || items.length === 0) return "";
+    function createItemListJS(items, listElementId) {
+      // Zmieniono nazwę
+      const listElement = document.getElementById(listElementId);
+      const noItemsElementId = `no${
+        listElementId.substring(5).charAt(0).toUpperCase() +
+        listElementId.substring(6)
+      }`;
+      const noItemsElement = document.getElementById(noItemsElementId);
+
+      if (!listElement || !noItemsElement) {
+        return;
+      }
+      if (!items || items.length === 0) {
+        listElement.innerHTML = "";
+        noItemsElement.classList.remove("d-none");
+        return;
+      }
       let html = "";
       items.forEach((item) => {
-        // Dodajemy sprawdzenie, czy item i jego właściwości istnieją
         const name = item?.name || "Nieznany przedmiot";
         const count = item?.count || "?";
         html += `<li class="list-group-item">${name} <span class="badge bg-secondary rounded-pill float-end">${count}</span></li>`;
       });
-      return html;
+      listElement.innerHTML = html;
+      noItemsElement.classList.add("d-none");
     }
 
-    // Funkcja do tworzenia kart dla otrzymanych obrażeń (zgodna z Twoją strukturą)
     function createDamageCard(part, damage) {
       const damageNum = Number(damage);
-      if (isNaN(damageNum)) return ""; // Pomiń jeśli obrażenia nie są liczbą
-      // Używa klas i struktury z Twojego profil-bear.html
-      return `
-             <div class="col">
-                 <div class="card">
-                     <div class="card-body shadow">
-                         <h6>${part.toUpperCase()}</h6>
-                         <hr>
-                         <h3>${formatNumber(damageNum)}</h3>
-                     </div>
-                 </div>
-             </div>`;
+      if (isNaN(damageNum)) return "";
+      return `<div class="col"><div class="card"><div class="card-body shadow"><h6>${part.toUpperCase()}</h6><hr><h3>${formatNumberForJS(damageNum)}</h3></div></div></div>`;
     }
 
-    // Event listener dla otwierania modala
     raidDetailsModal.addEventListener("show.bs.modal", function (event) {
       resetModal();
       const button = event.relatedTarget;
-      const filename = button.getAttribute("data-filename");
+      const jsonPathRelative = button.getAttribute("data-jsonpath-relative");
 
-      if (!filename) {
+      if (!jsonPathRelative) {
         if (modalLoader) modalLoader.classList.add("d-none");
         if (modalError)
           modalError.classList.remove("d-none").textContent =
-            "Błąd: Brak nazwy pliku rajdu.";
+            "Błąd: Brak ścieżki do pliku JSON rajdu (atrybut data-jsonpath-relative).";
         return;
       }
 
-      // Pobierz dane rajdu z API
-      fetch(`/api/raid/${filename}`)
+      const apiUrl = `/api/raid_json_details?path=${encodeURIComponent(
+        jsonPathRelative
+      )}`;
+      setText(modalTitle, `Ładowanie szczegółów rajdu...`);
+      if (modalLoader) modalLoader.classList.remove("d-none");
+
+      fetch(apiUrl)
         .then((response) => {
           if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            return response.text().then((text) => {
+              throw new Error(
+                `HTTP error! Status: ${response.status}, URL: ${apiUrl}, Odpowiedź serwera: ${text}`
+              );
+            });
           }
           return response.json();
         })
-        .then((data) => {
-          if (data.error || !data.data) {
+        .then((apiResponse) => {
+          if (apiResponse.error || !apiResponse.data) {
             throw new Error(
-              data.error || "Otrzymano nieprawidłowe dane z serwera."
+              apiResponse.error ||
+                "API zwróciło nieprawidłowe dane lub brak danych. Szczegóły: " +
+                  JSON.stringify(apiResponse)
             );
           }
-          const raidData = data.data;
+          const raidData = apiResponse.data;
 
-          if (modalTitle)
-            modalTitle.textContent = `Szczegóły rajdu: ${
-              raidData.location || "Nieznana"
-            } (${raidData.timestamp_formatted})`;
+          setText(
+            modalTitle,
+            `Szczegóły rajdu: ${raidData.location || "Nieznana"} (${
+              raidData.timestamp_formatted || "Brak daty"
+            })`
+          );
 
-          // Ofiary (dopasowanie do Twoich nagłówków tabeli)
-          if (elements.killsCount)
-            elements.killsCount.textContent = raidData.kills_count || 0;
+          setText(elements.killsCount, raidData.kills_count);
           if (elements.victimsTable && elements.noVictims) {
             if (raidData.victims && raidData.victims.length > 0) {
               let victimsHtml = "";
               raidData.victims.forEach((v, index) => {
-                victimsHtml += `
-                                <tr>
-                                    <th scope="row">${index + 1}</th>
-                                    <td>${v.Name || "N/A"}</td>
-                                    <td>${v.Level || "N/A"}</td>
-                                    <td>${v.SideTranslated || "N/A"}</td>
-                                    <td>${
-                                      v.WeaponName || "N/A"
-                                    }</td> {# GUN -> WeaponName #}
-                                    <td>${v.DistanceFormatted || "N/A"}</td>
-                                    <td>${
-                                      v.BodyPartTranslated || "N/A"
-                                    }</td> {# Where -> BodyPartTranslated #}
-                                </tr>`;
+                victimsHtml += `<tr><th scope="row">${index + 1}</th><td>${
+                  v.Name || "N/A"
+                }</td><td>${v.Level || "N/A"}</td><td>${
+                  v.RoleTranslated || "N/A"
+                }</td><td>${v.WeaponName || "N/A"}</td><td>${
+                  v.DistanceFormatted || "N/A"
+                }</td><td>${v.BodyPartTranslated || "N/A"}</td></tr>`;
               });
-              elements.victimsTable.innerHTML = victimsHtml;
+              setHtml(elements.victimsTable, victimsHtml);
               elements.noVictims.classList.add("d-none");
             } else {
-              elements.victimsTable.innerHTML = "";
+              setHtml(elements.victimsTable, "");
               elements.noVictims.classList.remove("d-none");
             }
           }
 
-          // Podstawowe Info (dopasowanie do Twojej struktury kart)
-          if (elements.raidResult)
-            elements.raidResult.textContent = raidData.raid_result || "N/A";
+          setText(elements.raidResult, raidData.raid_result);
           if (elements.raidResultCard) {
-            // Ustawienie klasy dla karty wyniku
-            let resultClass = ""; // Domyślnie brak dodatkowej klasy
-            if (raidData.raid_result === "Survived")
+            let resultClass =
+              "text-warning-emphasis bg-warning-subtle border-warning-subtle";
+            const raidResultLower = (raidData.raid_result || "").toLowerCase();
+            const survivedName = (
+              "{{ get_item_name('Survived') }}" || "Survived"
+            ).toLowerCase();
+            const killedName = (
+              "{{ get_item_name('Killed') }}" || "Killed"
+            ).toLowerCase();
+            if (
+              raidResultLower === survivedName ||
+              raidResultLower === "przetrwano"
+            )
               resultClass =
                 "text-success-emphasis bg-success-subtle border-success-subtle";
-            else if (raidData.raid_result === "Killed")
+            else if (
+              raidResultLower === killedName ||
+              raidResultLower === "zabity"
+            )
               resultClass =
                 "text-danger-emphasis bg-danger-subtle border-danger-subtle";
-            else
-              resultClass =
-                "text-warning-emphasis bg-warning-subtle border-warning-subtle"; // Dla innych
-            // Użyj bazowych klas + dynamicznej klasy wyniku
             elements.raidResultCard.className = `card-body shadow-lg shadow ${resultClass}`;
           }
-          if (elements.exitName)
-            elements.exitName.textContent =
-              raidData.exit_name ||
-              (raidData.raid_result === "Survived" ? "N/A" : "---");
-          if (elements.survivorClass)
-            elements.survivorClass.textContent =
-              raidData.survivor_class || "N/A";
-          // Poprawiony czas - używa tylko sformatowanej wartości
-          if (elements.playTime)
-            elements.playTime.textContent =
-              raidData.play_time_formatted || "N/A";
-          if (elements.playerCount)
-            elements.playerCount.textContent =
-              raidData.player_count_in_raid || "N/A";
+          setText(elements.exitName, raidData.exit_name || "---");
+          setText(elements.survivorClass, raidData.survivor_class);
+          setText(elements.playTime, raidData.play_time_formatted);
+          setText(elements.playerCount, raidData.player_count_in_raid);
 
-          // Zabójca (wypełnianie pól <dd> w strukturze <dl>)
           if (elements.killerInfoSection) {
-            if (raidData.killer_info) {
+            const killerData = raidData.killer_info;
+            if (killerData && Object.keys(killerData).length > 0) {
               elements.killerInfoSection.classList.remove("d-none");
-              if (elements.killerName)
-                elements.killerName.textContent =
-                  raidData.killer_info.name || "Nieznany";
-              if (elements.killerRole)
-                elements.killerRole.textContent =
-                  raidData.killer_info.role_translated || "N/A";
-              if (elements.killerSide)
-                elements.killerSide.textContent =
-                  raidData.killer_info.side || "N/A";
-              if (elements.killerWeapon)
-                elements.killerWeapon.textContent =
-                  raidData.killer_info.weapon_name || "N/A";
-              if (elements.killerBodypart)
-                elements.killerBodypart.textContent =
-                  raidData.killer_info.killed_by_part_translated || "N/A";
-              if (elements.killerDamage)
-                elements.killerDamage.textContent = raidData.killer_info
-                  .lethal_damage_amount
-                  ? `${raidData.killer_info.lethal_damage_amount}`
-                  : "N/A";
-              if (elements.killerDamageType)
-                elements.killerDamageType.textContent =
-                  raidData.killer_info.lethal_damage_type_translated || "N/A";
+              setText(elements.killerName, killerData.name, "Nieznany");
+              setText(elements.killerRole, killerData.role_translated);
+              setText(elements.killerSide, killerData.side);
+              setText(elements.killerWeapon, killerData.weapon_name);
+              setText(
+                elements.killerBodypart,
+                killerData.killed_by_part_translated
+              );
+              setText(elements.killerDamage, killerData.lethal_damage_amount);
+              setText(
+                elements.killerDamageType,
+                killerData.lethal_damage_type_translated
+              );
             } else {
               elements.killerInfoSection.classList.add("d-none");
             }
           }
 
-          // Statystyki Sesji (dopasowanie do Twoich h3)
-          if (elements.expTotal)
-            elements.expTotal.textContent = formatNumber(
-              raidData.total_session_exp_calculated
-            );
-          if (elements.expJson)
-            elements.expJson.textContent = formatNumber(
-              raidData.total_session_exp_from_json
-            );
-          if (elements.expMult)
-            elements.expMult.textContent = `${raidData.session_exp_mult || 1}x`;
-          if (elements.expBonus)
-            elements.expBonus.textContent = `${
-              raidData.experience_bonus_mult || 1
-            }x`;
-          if (elements.expKill)
-            elements.expKill.textContent = formatNumber(
-              raidData.session_stats?.exp_kill || 0
-            );
-          if (elements.expLoot)
-            elements.expLoot.textContent = formatNumber(
-              raidData.session_stats?.exp_looting || 0
-            );
-          if (elements.expExit)
-            elements.expExit.textContent = formatNumber(
-              raidData.session_stats?.exp_exit_status || 0
-            );
+          const sessionStats = raidData.session_stats || {};
+          setText(
+            elements.expTotal,
+            formatNumberForJS(raidData.total_session_exp_calculated)
+          );
+          setText(
+            elements.expJson,
+            formatNumberForJS(raidData.total_session_exp_from_json)
+          );
+          setText(elements.expMult, `${raidData.session_exp_mult || 1}x`);
+          setText(elements.expBonus, `${raidData.experience_bonus_mult || 1}x`);
+          setText(elements.expKill, formatNumberForJS(sessionStats.exp_kill));
+          setText(
+            elements.expLoot,
+            formatNumberForJS(sessionStats.exp_looting)
+          );
+          setText(
+            elements.expExit,
+            formatNumberForJS(sessionStats.exp_exit_status)
+          );
 
-          // Walka i Ruch (dopasowanie do Twoich h3)
-          if (elements.dmgDealt)
-            elements.dmgDealt.textContent = formatNumber(
-              raidData.session_stats?.damage_dealt || 0
-            );
-          if (elements.dmgReceived)
-            elements.dmgReceived.textContent = formatNumber(
-              raidData.session_stats?.damage_received_total || 0
-            );
-          if (elements.distance)
-            elements.distance.textContent =
-              raidData.session_stats?.distance_formatted || "N/A";
-          if (elements.bloodloss)
-            elements.bloodloss.textContent = formatNumber(
-              raidData.session_stats?.blood_loss || 0
-            );
-          if (elements.deaths)
-            elements.deaths.textContent = formatNumber(
-              raidData.session_stats?.deaths || 0
-            );
+          setText(
+            elements.dmgDealt,
+            formatNumberForJS(sessionStats.damage_dealt)
+          );
+          setText(
+            elements.dmgReceived,
+            formatNumberForJS(sessionStats.damage_received_total)
+          );
+          setText(elements.distance, sessionStats.distance_formatted);
+          setText(
+            elements.bloodloss,
+            formatNumberForJS(sessionStats.blood_loss)
+          );
+          setText(elements.deaths, formatNumberForJS(sessionStats.deaths));
 
-          // Otrzymane Obrażenia - Szczegóły (generowanie kart zgodnych z Twoją strukturą)
           if (elements.dmgReceivedDetails && elements.noDmgReceived) {
-            const details = raidData.session_stats?.damage_received_details;
-            if (details && Object.keys(details).length > 0) {
+            const dmgReceivedDetailsData = sessionStats.damage_received_details;
+            if (
+              dmgReceivedDetailsData &&
+              Object.keys(dmgReceivedDetailsData).length > 0
+            ) {
               let dmgDetailsHtml = "";
-              const orderedPartsDmg = [
+              const orderedParts = [
                 "Głowa",
                 "Klatka piersiowa",
                 "Brzuch",
@@ -1177,29 +1068,28 @@ poprzedniej wersji, obsługuje modal #}
                 "Lewa noga",
                 "Prawa noga",
               ];
-              orderedPartsDmg.forEach((partName) => {
-                if (details[partName] !== undefined) {
-                  // Sprawdź czy klucz istnieje
+              orderedParts.forEach((partName) => {
+                if (dmgReceivedDetailsData[partName] !== undefined) {
                   dmgDetailsHtml += createDamageCard(
                     partName,
-                    details[partName]
+                    dmgReceivedDetailsData[partName]
                   );
                 }
               });
-              for (const [part, dmg] of Object.entries(details)) {
-                if (!orderedPartsDmg.includes(part)) {
+              for (const [part, dmg] of Object.entries(
+                dmgReceivedDetailsData
+              )) {
+                if (!orderedParts.includes(part))
                   dmgDetailsHtml += createDamageCard(part, dmg);
-                }
               }
-              elements.dmgReceivedDetails.innerHTML = dmgDetailsHtml;
+              setHtml(elements.dmgReceivedDetails, dmgDetailsHtml);
               elements.noDmgReceived.classList.add("d-none");
             } else {
-              elements.dmgReceivedDetails.innerHTML = "";
+              setHtml(elements.dmgReceivedDetails, "");
               elements.noDmgReceived.classList.remove("d-none");
             }
           }
 
-          // Witalność (użycie Twojej funkcji paska)
           if (elements.vitalsList) {
             let vitalsHtml = "";
             const vitals = raidData.final_vitals;
@@ -1214,11 +1104,10 @@ poprzedniej wersji, obsługuje modal #}
                 vitals.Hydration,
                 vitals.MaxHydration
               );
-              // Dostosuj max dla Temp i Poison jeśli trzeba
               vitalsHtml += createProgressBarVitals(
                 "Temperatura",
                 vitals.Temperature,
-                50
+                40
               );
               vitalsHtml += createProgressBarVitals(
                 "Trucizna",
@@ -1226,11 +1115,12 @@ poprzedniej wersji, obsługuje modal #}
                 100
               );
             }
-            elements.vitalsList.innerHTML =
-              vitalsHtml || '<li class="list-group-item">Brak danych</li>';
+            setHtml(
+              elements.vitalsList,
+              vitalsHtml || '<li class="list-group-item">Brak danych</li>'
+            );
           }
 
-          // Zdrowie Części Ciała (użycie Twojej funkcji paska)
           if (elements.bodypartsList) {
             let bodypartsHtml = "";
             const health = raidData.final_health;
@@ -1247,75 +1137,119 @@ poprzedniej wersji, obsługuje modal #}
               orderedParts.forEach((partName) => {
                 if (health[partName]) {
                   const part = health[partName];
-                  let label = partName;
-                  if (part.effects && part.effects.length > 0) {
-                    label += ` <small class="text-warning">(${part.effects.join(
-                      ", "
-                    )})</small>`;
-                  }
                   bodypartsHtml += createProgressBarBody(
-                    label,
+                    partName,
                     part.current,
-                    part.maximum
+                    part.maximum,
+                    part.effects
                   );
                 }
               });
-              for (const partName in health) {
-                if (!orderedParts.includes(partName)) {
-                  const part = health[partName];
-                  let label = partName;
-                  if (part.effects && part.effects.length > 0) {
-                    label += ` <small class="text-warning">(${part.effects.join(
-                      ", "
-                    )})</small>`;
-                  }
-                  bodypartsHtml += createProgressBarBody(
-                    label,
-                    part.current,
-                    part.maximum
-                  );
+            }
+            setHtml(
+              elements.bodypartsList,
+              bodypartsHtml || '<li class="list-group-item">Brak danych</li>'
+            );
+          }
+
+          // Umiejętności
+          if (elements.skillsSection && elements.noSkillsChanged) {
+            const skills = raidData.skills_changed; // To jest już lista obiektów z API
+            if (skills && skills.length > 0) {
+              let commonSkillsHtml =
+                '<h4 class="mb-1 card p-3">Common</h4><ol class="list-group">';
+              let masteringSkillsHtml =
+                '<h4 class="mb-1 card p-3">Mastering</h4><ol class="list-group">';
+              let commonCount = 0;
+              let masteringCount = 0;
+              skills.forEach((skill) => {
+                const skillHtml = `
+                          <li class="list-group-item d-flex justify-content-between align-items-start p-3 gap-5 shadow">
+                              <div class="col">
+                                  <div class="fw-bold fs-4 mb-2">${
+                                    skill.SkillName || "N/A"
+                                  }</div>
+                                  <div class="progress" role="progressbar" aria-valuenow="${
+                                    parseFloat(skill.Progress) || 0
+                                  }" aria-valuemin="0" aria-valuemax="100" style="height: 20px;">
+                                      <div class="progress-bar ${
+                                        skill.SkillType === "Common"
+                                          ? "text-bg-info"
+                                          : "text-bg-warning"
+                                      } progress-bar-striped progress-bar-animated" style="width: ${
+                  parseFloat(skill.Progress) || 0
+                }%">
+                                          ${
+                                            skill.ProgressFormatted ||
+                                            skill.Progress ||
+                                            "0.00"
+                                          }
+                                      </div>
+                                  </div>
+                              </div>
+                              <span class="badge ${
+                                skill.SkillType === "Common"
+                                  ? "text-bg-info"
+                                  : "text-bg-warning"
+                              } border-0 p-3 fs-6">
+                                  ${
+                                    skill.PointsEarnedFormatted &&
+                                    skill.PointsEarnedFormatted !== "N/A" &&
+                                    skill.PointsEarnedFormatted !== "0.00" &&
+                                    skill.PointsEarnedFormatted !== "0"
+                                      ? "+" + skill.PointsEarnedFormatted
+                                      : skill.SkillType === "Mastering"
+                                      ? `Poziom ${
+                                          skill.ProgressFormatted ||
+                                          skill.Progress ||
+                                          "0.00"
+                                        }`
+                                      : "---"
+                                  }
+                              </span>
+                          </li>`;
+                if (skill.SkillType === "Common") {
+                  commonSkillsHtml += skillHtml;
+                  commonCount++;
+                } else if (skill.SkillType === "Mastering") {
+                  masteringSkillsHtml += skillHtml;
+                  masteringCount++;
                 }
-              }
-            }
-            elements.bodypartsList.innerHTML =
-              bodypartsHtml || '<li class="list-group-item">Brak danych</li>';
-          }
-
-          // Przedmioty
-          const itemLists = {
-            foundItems: raidData.found_in_raid_items,
-            transferItems: raidData.transfer_items,
-            droppedItems: raidData.dropped_items,
-            lostItems: raidData.lost_insured_items,
-          };
-          for (const [key, items] of Object.entries(itemLists)) {
-            const listElement = elements[key];
-            const noItemsElement =
-              elements[`no${key.charAt(0).toUpperCase() + key.slice(1)}`];
-            if (listElement && noItemsElement) {
-              if (items && items.length > 0) {
-                listElement.innerHTML = createItemList(items);
-                noItemsElement.classList.add("d-none");
-              } else {
-                listElement.innerHTML = "";
-                noItemsElement.classList.remove("d-none");
-              }
+              });
+              commonSkillsHtml +=
+                (commonCount === 0
+                  ? '<li class="list-group-item">Brak zmian/danych.</li>'
+                  : "") + "</ol>";
+              masteringSkillsHtml +=
+                (masteringCount === 0
+                  ? '<li class="list-group-item">Brak zmian/danych.</li>'
+                  : "") + "</ol>";
+              setHtml(
+                elements.skillsSection,
+                `<div class="row g-3"><div class="col-md-6">${commonSkillsHtml}</div><div class="col-md-6">${masteringSkillsHtml}</div></div>`
+              );
+              elements.noSkillsChanged.classList.add("d-none");
             } else {
-              console.warn(`Missing elements for item list: ${key}`);
+              setHtml(elements.skillsSection, "");
+              elements.noSkillsChanged.classList.remove("d-none");
             }
           }
 
-          // Pokaż zawartość, ukryj loader
+          createItemListJS(raidData.found_in_raid_items, "modal-found-items");
+          createItemListJS(raidData.transfer_items, "modal-transfer-items");
+          createItemListJS(raidData.dropped_items, "modal-dropped-items");
+          createItemListJS(raidData.lost_insured_items, "modal-lost-items");
+
           if (modalLoader) modalLoader.classList.add("d-none");
           if (modalContent) modalContent.classList.remove("d-none");
         })
         .catch((error) => {
-          console.error("Error fetching raid details:", error);
+          console.error("Pełny błąd fetch dla modala:", error);
           if (modalLoader) modalLoader.classList.add("d-none");
           if (modalError)
             modalError.classList.remove(
               "d-none"
-            ).textContent = `Błąd ładowania danych: ${error.message}`;
+            ).textContent = `Błąd ładowania danych rajdu: ${error.message}`;
         });
     });
   });

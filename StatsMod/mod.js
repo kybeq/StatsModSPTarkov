@@ -1,9 +1,9 @@
 const fs = require("fs");
 const path = require("path");
-const http = require("http"); // DODANO
+const http = require("http"); // Zapewniamy, że to http
 
-const FLASK_API_HOSTNAME = "127.0.0.1"; // DODANO
-const FLASK_API_PORT = 5000; // DODANO
+const FLASK_API_HOSTNAME = "127.0.0.1";
+const FLASK_API_PORT = 5000;
 
 class DetailedStatsTrackerFikaFinalPatch {
   constructor() {
@@ -18,19 +18,15 @@ class DetailedStatsTrackerFikaFinalPatch {
     this.persistentStats = {};
     this.modConfig = {};
     this.currentRaidInfo = null;
-
-    this.ensureDebugLogFolderExists();
     this.setDefaultConfig();
     this.initializePersistentStats();
-    // notifyFlaskConnected zostanie wywołane w postDBLoad
   }
 
   async sendToFlask(endpointPath, dataToSend) {
-    // Ta funkcja może pozostać async
     const currentLogger = this.logger || {
       info: () => {},
       error: console.error,
-    }; // Prosty fallback loggera
+    };
     try {
       const serializedData = JSON.stringify(dataToSend);
       const options = {
@@ -43,59 +39,31 @@ class DetailedStatsTrackerFikaFinalPatch {
           "Content-Length": Buffer.byteLength(serializedData),
         },
       };
-
       const req = http.request(options, (res) => {
-        let responseData = "";
-        res.on("data", (chunk) => (responseData += chunk));
-        res.on("end", () => {
-          if (res.statusCode >= 200 && res.statusCode < 300) {
-            // Ograniczone logowanie sukcesu
-            // currentLogger.info(`[StatsMods] Flask OK: ${options.path}`);
-          } else {
-            currentLogger.error(
-              `[StatsMods] Flask ERR ${options.path}: ${res.statusCode}`
-            );
-          }
-        });
+        if (res.statusCode < 200 || res.statusCode >= 300) {
+          // res.on("data", (d) => process.stdout.write(d)); // Opcjonalne logowanie odpowiedzi błędu
+          currentLogger.error(
+            `[DST] Flask ERR ${options.path}: ${res.statusCode}`
+          );
+        }
       });
-      req.on("error", (e) => {
-        currentLogger.error(
-          `[StatsMods] HTTP ERR ${options.path}: ${e.message}`
-        );
-      });
+      req.on("error", (e) =>
+        currentLogger.error(`[DST] HTTP ERR ${options.path}: ${e.message}`)
+      );
       req.write(serializedData);
       req.end();
     } catch (e) {
       currentLogger.error(
-        `[StatsMods] SendToFlask EXC (${endpointPath}): ${e.message}`
+        `[DST] SendToFlask EXC (${endpointPath}): ${e.message}`
       );
     }
   }
 
   async notifyFlaskConnected() {
-    // Ta funkcja może pozostać async
-    const data = { mod: "DetailedStatsTracker", status: "connected_v_min" };
-    await this.sendToFlask(`/api/mod/connect`, data);
-  }
-
-  ensureDebugLogFolderExists() {
-    const debugFolderPath = path.join(__dirname, "debug_logs");
-    try {
-      if (!fs.existsSync(debugFolderPath)) {
-        fs.mkdirSync(debugFolderPath, { recursive: true });
-      }
-    } catch (e) {
-      console.error(`[StatsMods] ERR creating debug_logs: ${e}`);
-    }
-  }
-
-  preSptLoad(container) {
-    try {
-      this.logger = container.resolve("WinstonLogger");
-    } catch (e) {
-      console.error(`[StatsMods] ERR resolving WinstonLogger: ${e}`);
-    }
-    this.ensureDebugLogFolderExists();
+    await this.sendToFlask(`/api/mod/connect`, {
+      mod: "DetailedStatsTracker",
+      status: "connected_final_minimal",
+    });
   }
 
   postDBLoad(container) {
@@ -104,23 +72,33 @@ class DetailedStatsTrackerFikaFinalPatch {
       this.databaseServer = container.resolve("DatabaseServer");
       this.saveServer = container.resolve("SaveServer");
       this.profileHelper = container.resolve("ProfileHelper");
-      // Reszta serwisów...
-
+      try {
+        container.resolve("StaticRouterModService");
+      } catch (e) {} // Ignoruj, jeśli nie ma
+      if (
+        !this.jsonUtil ||
+        !this.databaseServer ||
+        !this.saveServer ||
+        !this.profileHelper
+      ) {
+        (this.logger || console).error(
+          "[DST] Failed to resolve core SPT services."
+        );
+      }
       this.attemptFikaPatchStart(container);
       this.attemptFikaPatchEnd(container);
       this.loadConfig();
       this.loadPersistentStats();
-
       this.notifyFlaskConnected().catch((e) =>
         (this.logger || console).error(
-          "[StatsMods] NotifyFlask failed in postDBLoad:",
+          "[DST] NotifyFlask failed in postDBLoad:",
           e.message
         )
       );
-      console.log("[StatsMods] Mod initialized.");
+      (this.logger || console).info("[DST] Mod initialized.");
     } catch (e) {
       (this.logger || console).error(
-        `[StatsMods] CRITICAL postDBLoad ERR: ${e}\n${e.stack}`
+        `[DST] CRITICAL postDBLoad ERR: ${e}\n${e.stack}`
       );
     }
   }
@@ -134,7 +112,6 @@ class DetailedStatsTrackerFikaFinalPatch {
       ) {
         const originalStartLocalRaid = locationService.startLocalRaid;
         locationService.startLocalRaid = (sessionId, request) => {
-          // USUNIĘTO async
           let originalResult = null;
           try {
             originalResult = originalStartLocalRaid.call(
@@ -144,78 +121,76 @@ class DetailedStatsTrackerFikaFinalPatch {
             );
           } catch (e) {
             (this.logger || console).error(
-              `[StatsMods] ERR calling original startLocalRaid: ${e}\n${e.stack}`
+              `[DST] ERR calling original startLocalRaid: ${e.stack}`
             );
             return originalResult;
           }
           try {
-            // this.saveJsonToDebugFile(`startLocalRaid_request_${sessionId}_${Date.now()}.json`, request);
-            // this.saveJsonToDebugFile(`startLocalRaid_result_${sessionId}_${Date.now()}.json`, originalResult);
             let pmcData = null;
             if (this.profileHelper) {
               try {
                 pmcData =
                   this.profileHelper.getPmcProfile(sessionId) ||
                   this.profileHelper.getFullProfile(sessionId);
-              } catch (e) {
-                /* cicho */
-              }
+              } catch (e) {}
             }
-            const mapName = request?.location?.toLowerCase() || "unknown";
-            const timeOfDay =
-              request?.timeAndWeatherSettings?.timeVariant ||
-              originalResult?.locationLoot?.TimeAndWeatherSettings
-                ?.timeVariant ||
-              "unknown";
-            const weatherSettings =
-              request?.timeAndWeatherSettings?.weatherSettings;
-            const weather =
-              weatherSettings?.cloudiness !== undefined
-                ? weatherSettings.cloudiness
-                : weatherSettings?.Cloudiness !== undefined
-                ? weatherSettings.Cloudiness
-                : "unknown";
-
             if (sessionId && pmcData && this.jsonUtil) {
               try {
                 this.currentRaidInfo = {
                   sessionId: sessionId,
                   profileAtStart: this.jsonUtil.clone(pmcData),
-                  map: mapName,
+                  map: request?.location?.toLowerCase() || "unknown",
                   startTime: Date.now(),
-                  timeOfDay: timeOfDay,
-                  weather: weather,
+                  timeOfDay:
+                    request?.timeAndWeatherSettings?.timeVariant ||
+                    originalResult?.locationLoot?.TimeAndWeatherSettings
+                      ?.timeVariant ||
+                    "unknown",
+                  weather:
+                    request?.timeAndWeatherSettings?.weatherSettings
+                      ?.cloudiness !== undefined
+                      ? request.timeAndWeatherSettings.weatherSettings
+                          .cloudiness
+                      : request?.timeAndWeatherSettings?.weatherSettings
+                          ?.Cloudiness !== undefined
+                      ? request.timeAndWeatherSettings.weatherSettings
+                          .Cloudiness
+                      : "unknown",
                 };
               } catch (cloneError) {
                 this.currentRaidInfo = null;
               }
             }
             if (pmcData) {
-              const flaskStartData = {
+              this.sendToFlask(`/api/raid/start`, {
                 sessionId: sessionId,
                 request: {
                   location: request?.location,
                   timeAndWeatherSettings: request?.timeAndWeatherSettings,
                   playerProfile: { Info: pmcData.Info },
                 },
-              };
-              this.sendToFlask(`/api/raid/start`, flaskStartData) // USUNIĘTO await
-                .catch((e) =>
-                  (this.logger || console).error(
-                    `[StatsMods] ERR sending start data (non-blocking): ${e.message}`
-                  )
-                );
+              }).catch((e) =>
+                (this.logger || console).error(
+                  `[DST] ERR sending start data: ${e.message}`
+                )
+              );
             }
           } catch (e) {
-            /* cicho */
+            (this.logger || console).error(
+              `[DST] ERR in custom start processing: ${e.stack}`
+            );
           }
           return originalResult;
         };
       } else {
-        /* cicho */
+        (this.logger || console).error(
+          "[DST] FAILED to patch LocationLifecycleService.startLocalRaid"
+        );
       }
     } catch (e) {
-      /* cicho */
+      (this.logger || console).error(
+        `[DST] CRITICAL ERR patching LocationLifecycleService: ${e.stack}`
+      );
     }
   }
 
@@ -234,7 +209,6 @@ class DetailedStatsTrackerFikaFinalPatch {
           matchId,
           request
         ) => {
-          // USUNIĘTO async
           let originalResult;
           try {
             originalResult = originalOnEndLocalRaidRequest.call(
@@ -245,26 +219,27 @@ class DetailedStatsTrackerFikaFinalPatch {
             );
           } catch (e) {
             (this.logger || console).error(
-              `[StatsMods] ERR calling original Fika onEndLocalRaidRequest: ${e}\n${e.stack}`
+              `[DST] ERR calling original Fika onEndLocalRaidRequest: ${e.stack}`
             );
             return originalResult;
           }
           try {
-            // this.saveJsonToDebugFile(`onEndLocalRaidRequest_request_FIKA_${sessionId}_${Date.now()}.json`, request);
             if (request && request.results && request.results.profile) {
-              const flaskEndData = { sessionId, matchId, request };
-              this.sendToFlask(`/api/raid/end`, flaskEndData) // USUNIĘTO await
-                .catch((e) =>
-                  (this.logger || console).error(
-                    `[StatsMods] ERR sending end data (Fika) (non-blocking): ${e.message}`
-                  )
-                );
+              this.sendToFlask(`/api/raid/end`, {
+                sessionId,
+                matchId,
+                request,
+              }).catch((e) =>
+                (this.logger || console).error(
+                  `[DST] ERR sending end data (Fika): ${e.message}`
+                )
+              );
             }
             if (
               !this.currentRaidInfo ||
               this.currentRaidInfo.sessionId !== sessionId
             ) {
-              /* cicho */
+              /* Logika dla braku currentRaidInfo */
             } else {
               const exitStatus =
                 request?.results?.result?.toLowerCase() ||
@@ -285,7 +260,7 @@ class DetailedStatsTrackerFikaFinalPatch {
                   exitStatus,
                   exitName,
                   offraidData
-                ); // USUNIĘTO await
+                );
               } else {
                 if (
                   this.currentRaidInfo &&
@@ -300,13 +275,16 @@ class DetailedStatsTrackerFikaFinalPatch {
               this.currentRaidInfo.sessionId === sessionId
             )
               this.currentRaidInfo = null;
+            (this.logger || console).error(
+              `[DST] ERR in custom Fika end processing: ${e.stack}`
+            );
           }
           return originalResult;
         };
         patchedRaidEnd = true;
       }
     } catch (e) {
-      /* cicho */
+      /* cicho, jeśli Fika nie istnieje */
     }
 
     if (!patchedRaidEnd) {
@@ -318,7 +296,6 @@ class DetailedStatsTrackerFikaFinalPatch {
         ) {
           const originalRaidEnd = inraidController.raidEnd;
           inraidController.raidEnd = (sessionId, saveProfileRequest) => {
-            // USUNIĘTO async
             let originalResult;
             try {
               originalResult = originalRaidEnd.call(
@@ -328,16 +305,14 @@ class DetailedStatsTrackerFikaFinalPatch {
               );
             } catch (e) {
               (this.logger || console).error(
-                `[StatsMods] ERR calling original InraidController.raidEnd: ${e}\n${e.stack}`
+                `[DST] ERR calling original InraidController.raidEnd: ${e.stack}`
               );
               return originalResult;
             }
             try {
-              // this.saveJsonToDebugFile(`InraidController_raidEnd_request_SPT_${sessionId}_${Date.now()}.json`, saveProfileRequest);
               const offraidData = saveProfileRequest.profile;
               const exitStatus = saveProfileRequest.eftData.exit.toLowerCase();
               const exitName = saveProfileRequest.eftData.exitName;
-
               if (
                 offraidData &&
                 typeof offraidData === "object" &&
@@ -345,7 +320,7 @@ class DetailedStatsTrackerFikaFinalPatch {
                 offraidData.Stats &&
                 offraidData.Stats.Eft
               ) {
-                const flaskEndData = {
+                this.sendToFlask(`/api/raid/end`, {
                   sessionId: sessionId,
                   request: {
                     results: {
@@ -355,26 +330,23 @@ class DetailedStatsTrackerFikaFinalPatch {
                       profile: offraidData,
                     },
                   },
-                };
-                this.sendToFlask(`/api/raid/end`, flaskEndData) // USUNIĘTO await
-                  .catch((e) =>
-                    (this.logger || console).error(
-                      `[StatsMods] ERR sending end data (SPT) (non-blocking): ${e.message}`
-                    )
-                  );
-
+                }).catch((e) =>
+                  (this.logger || console).error(
+                    `[DST] ERR sending end data (SPT): ${e.message}`
+                  )
+                );
                 if (
                   !this.currentRaidInfo ||
                   this.currentRaidInfo.sessionId !== sessionId
                 ) {
-                  /* cicho */
+                  /* Logika */
                 } else {
                   this.processRaidEndData(
                     sessionId,
                     exitStatus,
                     exitName,
                     offraidData
-                  ); // USUNIĘTO await
+                  );
                 }
               } else {
                 if (
@@ -389,43 +361,39 @@ class DetailedStatsTrackerFikaFinalPatch {
                 this.currentRaidInfo.sessionId === sessionId
               )
                 this.currentRaidInfo = null;
+              (this.logger || console).error(
+                `[DST] ERR in custom SPT end processing: ${e.stack}`
+              );
             }
             return originalResult;
           };
+        } else {
+          (this.logger || console).error(
+            "[DST] FAILED to patch InraidController.raidEnd"
+          );
         }
       } catch (e) {
-        /* cicho */
+        (this.logger || console).error(
+          `[DST] CRITICAL ERR patching InraidController: ${e.stack}`
+        );
       }
     }
   }
 
   saveJsonToDebugFile(filename, data) {
-    if (!this.jsonUtil && !JSON.stringify) return;
-    try {
-      const debugFolderPath = path.join(__dirname, "debug_logs");
-      if (!fs.existsSync(debugFolderPath))
-        fs.mkdirSync(debugFolderPath, { recursive: true });
-      const filePath = path.join(debugFolderPath, filename);
-      const jsonData = this.jsonUtil
-        ? this.jsonUtil.serialize(data, true)
-        : JSON.stringify(data, null, 2);
-      fs.writeFileSync(filePath, jsonData, "utf8");
-    } catch (e) {
-      /* cicho */
-    }
+    /* Minimalne lub puste, jeśli niepotrzebne */
   }
-
   logObjectDataForDebugging(label, data) {
-    /* pusta lub minimalne logowanie */
+    /* Minimalne lub puste */
   }
 
   processRaidEndData(sessionId, exitStatus, exitName, offraidData) {
-    // USUNIĘTO async
-    if (!this.currentRaidInfo || this.currentRaidInfo.sessionId !== sessionId) {
-      this.currentRaidInfo = null;
-      return;
-    }
-    if (!this.databaseServer || !this.jsonUtil) {
+    if (
+      !this.currentRaidInfo ||
+      this.currentRaidInfo.sessionId !== sessionId ||
+      !this.databaseServer ||
+      !this.jsonUtil
+    ) {
       this.currentRaidInfo = null;
       return;
     }
@@ -433,7 +401,6 @@ class DetailedStatsTrackerFikaFinalPatch {
     this.currentRaidInfo = null;
     const endTime = Date.now();
     const durationSeconds = Math.floor((endTime - raidInfo.startTime) / 1000);
-    const raidResult = exitStatus;
     try {
       let expGainedInRaid = 0;
       if (
@@ -452,7 +419,7 @@ class DetailedStatsTrackerFikaFinalPatch {
         durationSeconds: durationSeconds,
         timeOfDay: raidInfo.timeOfDay,
         weather: raidInfo.weather,
-        status: raidResult,
+        status: exitStatus,
         exitName: exitName || "N/A",
         kills: [],
         loot: { itemsAdded: [], itemsRemoved: [], totalValueGained: 0 },
@@ -464,11 +431,9 @@ class DetailedStatsTrackerFikaFinalPatch {
         for (const victim of offraidData.Stats.Eft.Victims) {
           let weaponName = "Unknown";
           const weaponIdClean = victim.Weapon?.split(" ")[0];
-          if (weaponIdClean && dbItems[weaponIdClean]?._name) {
+          if (weaponIdClean && dbItems[weaponIdClean]?._name)
             weaponName = dbItems[weaponIdClean]._name;
-          } else if (victim.Weapon) {
-            weaponName = victim.Weapon;
-          }
+          else if (victim.Weapon) weaponName = victim.Weapon;
           processedRaidStats.kills.push({
             name: victim.Name || "?",
             role: victim.Role || "?",
@@ -480,10 +445,12 @@ class DetailedStatsTrackerFikaFinalPatch {
           });
         }
       }
-      this.updatePersistentStats(processedRaidStats); // USUNIĘTO await
-      this.savePersistentStats(); // USUNIĘTO await
+      this.updatePersistentStats(processedRaidStats);
+      this.savePersistentStats();
     } catch (e) {
-      /* cicho */
+      (this.logger || console).error(
+        `[DST] ERR in processRaidEndData: ${e.stack}`
+      );
     }
   }
 
@@ -505,8 +472,9 @@ class DetailedStatsTrackerFikaFinalPatch {
       if (!fs.existsSync(configDir))
         fs.mkdirSync(configDir, { recursive: true });
       if (fs.existsSync(configPath)) {
-        const configContent = fs.readFileSync(configPath, "utf8");
-        this.modConfig = this.jsonUtil.deserialize(configContent);
+        this.modConfig = this.jsonUtil.deserialize(
+          fs.readFileSync(configPath, "utf8")
+        );
         this.ensureDefaultConfigValues();
       } else {
         this.setDefaultConfig();
@@ -520,15 +488,17 @@ class DetailedStatsTrackerFikaFinalPatch {
   setDefaultConfig() {
     if (typeof this.modConfig !== "object" || this.modConfig === null)
       this.modConfig = {};
-    const defaultConfig = {
-      enabled: true,
-      trackKills: true,
-      trackLootValue: false,
-      maxRaidHistory: 50,
-      persistentStatsFilePath: "stats_data.json",
+    this.modConfig = {
+      ...{
+        enabled: true,
+        trackKills: true,
+        trackLootValue: false,
+        maxRaidHistory: 50,
+        persistentStatsFilePath: "stats_data.json",
+      },
+      ...this.modConfig,
     };
-    this.modConfig = { ...defaultConfig, ...this.modConfig };
-    return defaultConfig;
+    return this.modConfig;
   }
 
   ensureDefaultConfigValues() {
@@ -560,7 +530,7 @@ class DetailedStatsTrackerFikaFinalPatch {
         "utf8"
       );
     } catch (e) {
-      /* cicho */
+      (this.logger || console).error(`[DST] ERR saving config: ${e}`);
     }
   }
 
@@ -569,9 +539,10 @@ class DetailedStatsTrackerFikaFinalPatch {
       this.initializePersistentStats();
       return;
     }
-    const relativePath =
-      this.modConfig.persistentStatsFilePath || "stats_data.json";
-    const filePath = path.join(__dirname, relativePath);
+    const filePath = path.join(
+      __dirname,
+      this.modConfig.persistentStatsFilePath || "stats_data.json"
+    );
     try {
       const dirPath = path.dirname(filePath);
       if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
@@ -611,9 +582,10 @@ class DetailedStatsTrackerFikaFinalPatch {
 
   savePersistentStats() {
     if (!this.jsonUtil) return;
-    const relativePath =
-      this.modConfig.persistentStatsFilePath || "stats_data.json";
-    const filePath = path.join(__dirname, relativePath);
+    const filePath = path.join(
+      __dirname,
+      this.modConfig.persistentStatsFilePath || "stats_data.json"
+    );
     try {
       const modDir = path.dirname(filePath);
       if (!fs.existsSync(modDir)) fs.mkdirSync(modDir, { recursive: true });
@@ -623,7 +595,7 @@ class DetailedStatsTrackerFikaFinalPatch {
         "utf8"
       );
     } catch (e) {
-      /* cicho */
+      (this.logger || console).error(`[DST] ERR saving persistent stats: ${e}`);
     }
   }
 
@@ -637,26 +609,21 @@ class DetailedStatsTrackerFikaFinalPatch {
       this.persistentStats.totalKills = { pmc: 0, scav: 0, boss: 0, other: 0 };
     if (!Array.isArray(this.persistentStats.raidHistory))
       this.persistentStats.raidHistory = [];
-
     this.persistentStats.totalRaids =
       (this.persistentStats.totalRaids || 0) + 1;
     this.persistentStats.totalSurvived =
       this.persistentStats.totalSurvived || 0;
-    this.persistentStats.totalKills.pmc =
-      this.persistentStats.totalKills.pmc || 0;
-    this.persistentStats.totalKills.scav =
-      this.persistentStats.totalKills.scav || 0;
-    this.persistentStats.totalKills.boss =
-      this.persistentStats.totalKills.boss || 0;
-    this.persistentStats.totalKills.other =
-      this.persistentStats.totalKills.other || 0;
+    Object.keys(this.persistentStats.totalKills).forEach(
+      (k) =>
+        (this.persistentStats.totalKills[k] =
+          this.persistentStats.totalKills[k] || 0)
+    );
     this.persistentStats.totalExp =
       (this.persistentStats.totalExp || 0) +
       (processedRaidStats.expGained || 0);
-
     if (processedRaidStats.status === "survived")
       this.persistentStats.totalSurvived++;
-    if (processedRaidStats.kills && Array.isArray(processedRaidStats.kills)) {
+    if (processedRaidStats.kills?.length) {
       for (const kill of processedRaidStats.kills) {
         const role = kill.role?.toLowerCase() || "other";
         if (role.includes("bear") || role.includes("usec"))

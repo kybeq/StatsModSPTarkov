@@ -1,0 +1,40 @@
+{
+  "sessionId": "681e0c4400013a33254db8ec",
+  "request": {
+    "location": "factory4_day",
+    "playerProfile": {
+      "Info": {
+        "AccountType": 0,
+        "BannedState": false,
+        "BannedUntil": 0,
+        "Bans": [],
+        "Experience": 6032,
+        "GameVersion": "unheard_edition",
+        "IsStreamerModeAvailable": false,
+        "LastTimePlayedAsSavage": 0,
+        "Level": 3,
+        "LowerNickname": "aasadd",
+        "MemberCategory": 1026,
+        "PrestigeLevel": 0,
+        "isMigratedSkills": false,
+        "SelectedMemberCategory": 1024,
+        "NeedWipeOptions": [],
+        "Nickname": "aasadd",
+        "NicknameChangeDate": 0,
+        "RegistrationDate": 1746799740,
+        "SavageLockTime": 0,
+        "Settings": {
+          "BotDifficulty": "easy",
+          "Experience": -1,
+          "Role": "assault"
+        },
+        "Side": "Usec",
+        "SquadInviteRestriction": false,
+        "HasCoopExtension": false,
+        "HasPveGame": true,
+        "Voice": "Usec_3",
+        "lockedMoveCommands": true
+      }
+    }
+  }
+}
