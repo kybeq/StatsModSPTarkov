@@ -1,5 +1,6 @@
 const fs = require("fs").promises;
 const path = require("path");
+const https = require("http");
 
 class DetailedStatsTrackerFikaFinalPatch {
   constructor() {
@@ -16,6 +17,7 @@ class DetailedStatsTrackerFikaFinalPatch {
     this.modConfig = {};
     this.currentRaidInfo = null;
 
+    this.apiUrl = "http://127.0.0.1:5000/api";
     this.initialize();
   }
 
@@ -23,57 +25,78 @@ class DetailedStatsTrackerFikaFinalPatch {
     await this.ensureDebugLogFolderExists();
     this.setDefaultConfig();
     this.initializePersistentStats();
+    await this.notifyFlaskConnected();
+  }
+
+  async notifyFlaskConnected() {
+    const data = { mod: "DetailedStatsTracker", status: "connected" };
+    const serializedData = JSON.stringify(data);
+    const options = {
+      hostname: "127.0.0.1",
+      port: 5000,
+      path: "/api/mod/connect",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Length": Buffer.byteLength(serializedData),
+      },
+    };
+
+    try {
+      await new Promise((resolve, reject) => {
+        const req = https.request(options, (res) => {
+          if (res.statusCode >= 200 && res.statusCode < 300) {
+            this.logger?.info("Notified Flask: Mod connected");
+            resolve();
+          } else {
+            reject(new Error(`Flask API error: ${res.statusCode}`));
+          }
+        });
+
+        req.on("error", (e) => {
+          reject(new Error(`HTTP request failed: ${e.message}`));
+        });
+
+        req.write(serializedData);
+        req.end();
+      });
+    } catch (e) {
+      this.logger?.error(`Failed to notify Flask: ${e.message}`);
+    }
   }
 
   async ensureDebugLogFolderExists() {
     const debugFolderPath = path.join(__dirname, "debug_logs");
     try {
       await fs.mkdir(debugFolderPath, { recursive: true });
-      this.logger?.info(
-        `[StatTrackerFinalPatch] Created debug log folder: ${debugFolderPath}`
-      );
+      this.logger?.info(`Created debug log folder: ${debugFolderPath}`);
     } catch (e) {
-      this.logger?.error(
-        `[StatTrackerFinalPatch] Could not create debug log folder: ${e}`
-      );
+      this.logger?.error(`Could not create debug log folder: ${e}`);
     }
   }
 
   preSptLoad(container) {
     try {
-      this.logger?.info("[StatTrackerFinalPatch] Entering preSptLoad");
       this.logger = container.resolve("WinstonLogger");
-      this.logger?.info(
-        "[StatTrackerFinalPatch] Logger resolved successfully."
-      );
+      this.logger?.info("Logger resolved successfully.");
     } catch (e) {
-      console.error(
-        `[StatTrackerFinalPatch] Error resolving WinstonLogger: ${e}`
-      );
+      console.error(`Error resolving WinstonLogger: ${e}`);
     }
     this.ensureDebugLogFolderExists();
   }
 
   postDBLoad(container) {
     if (!this.logger) {
-      console.warn(
-        "[StatTrackerFinalPatch] Logger not initialized in preSptLoad."
-      );
+      console.warn("Logger not initialized in preSptLoad.");
     }
-    this.logger?.info("[StatTrackerFinalPatch] Entering postDBLoad");
-
     try {
       this.initializeServices(container);
       this.patchServices(container);
       this.loadConfig();
       this.loadPersistentStats();
-      this.logger?.info(
-        "[StatTrackerFinalPatch] Mod finished postDBLoad initialization."
-      );
+      this.logger?.info("Mod finished postDBLoad initialization.");
     } catch (e) {
-      this.logger?.error(
-        `[StatTrackerFinalPatch] CRITICAL ERROR during postDBLoad: ${e}\n${e.stack}`
-      );
+      this.logger?.error(`CRITICAL ERROR during postDBLoad: ${e}\n${e.stack}`);
     }
   }
 
@@ -90,13 +113,9 @@ class DetailedStatsTrackerFikaFinalPatch {
       !this.saveServer ||
       !this.profileHelper
     ) {
-      this.logger?.error(
-        "[StatTrackerFinalPatch] Failed to resolve core SPT services."
-      );
+      this.logger?.error("Failed to resolve core SPT services.");
     } else {
-      this.logger?.info(
-        "[StatTrackerFinalPatch] Core SPT services resolved successfully."
-      );
+      this.logger?.info("Core SPT services resolved successfully.");
     }
   }
 
@@ -106,9 +125,6 @@ class DetailedStatsTrackerFikaFinalPatch {
   }
 
   attemptFikaPatchStart(container) {
-    this.logger?.info(
-      "[StatTrackerFinalPatch] Attempting to patch LocationLifecycleService.startLocalRaid"
-    );
     try {
       const locationService = container.resolve("LocationLifecycleService");
       if (
@@ -124,24 +140,21 @@ class DetailedStatsTrackerFikaFinalPatch {
           "startLocalRaid"
         );
         this.logger?.info(
-          "[StatTrackerFinalPatch] LocationLifecycleService.startLocalRaid patched successfully!"
+          "LocationLifecycleService.startLocalRaid patched successfully."
         );
       } else {
         this.logger?.error(
-          "[StatTrackerFinalPatch] FAILED to resolve LocationLifecycleService or its method!"
+          "FAILED to resolve LocationLifecycleService or its method."
         );
       }
     } catch (e) {
       this.logger?.error(
-        `[StatTrackerFinalPatch] CRITICAL Error patching LocationLifecycleService: ${e}\n${e.stack}`
+        `CRITICAL Error patching LocationLifecycleService: ${e}\n${e.stack}`
       );
     }
   }
 
   attemptFikaPatchEnd(container) {
-    this.logger?.info(
-      "[StatTrackerFinalPatch] Attempting to patch FikaInsuranceService.onEndLocalRaidRequest"
-    );
     try {
       const fikaInsuranceService = container.resolve("FikaInsuranceService");
       if (
@@ -158,36 +171,32 @@ class DetailedStatsTrackerFikaFinalPatch {
           "onEndLocalRaidRequest"
         );
         this.logger?.info(
-          "[StatTrackerFinalPatch] FikaInsuranceService.onEndLocalRaidRequest patched successfully!"
+          "FikaInsuranceService.onEndLocalRaidRequest patched successfully."
         );
       } else {
         this.logger?.error(
-          "[StatTrackerFinalPatch] FAILED to resolve FikaInsuranceService or its method!"
+          "FAILED to resolve FikaInsuranceService or its method."
         );
       }
     } catch (e) {
       this.logger?.error(
-        `[StatTrackerFinalPatch] CRITICAL Error patching FikaInsuranceService: ${e}\n${e.stack}`
+        `CRITICAL Error patching FikaInsuranceService: ${e}\n${e.stack}`
       );
     }
   }
 
   patchMethod(originalMethod, context, handler, methodName) {
     return (...args) => {
-      this.logger?.info(
-        `[StatTrackerFinalPatch] === ${methodName} PATCHED! Args: ${JSON.stringify(
-          args
-        )} ===`
-      );
+      this.logger?.info(`${methodName} patched for session: ${args[0]}`);
       let result;
       try {
         result = originalMethod.apply(context, args);
         this.logger?.info(
-          `[StatTrackerFinalPatch] Original ${methodName} finished.`
+          `Original ${methodName} finished for session: ${args[0]}`
         );
       } catch (e) {
         this.logger?.error(
-          `[StatTrackerFinalPatch] Error calling original ${methodName}: ${e}\n${e.stack}`
+          `Error calling original ${methodName}: ${e}\n${e.stack}`
         );
         return result;
       }
@@ -197,26 +206,19 @@ class DetailedStatsTrackerFikaFinalPatch {
   }
 
   async handleRaidStart([sessionId, request], result) {
-    this.logger?.info(
-      "[StatTrackerFinalPatch] Executing custom raid start processing"
-    );
-    try {
-      await this.saveJsonToDebugFile(
-        `startLocalRaid_request_${sessionId}_${Date.now()}.json`,
-        request
+    if (this.currentRaidInfo?.sessionId === sessionId) {
+      this.logger?.warn(
+        `Raid start already processed for session: ${sessionId}. Skipping.`
       );
-      await this.saveJsonToDebugFile(
-        `startLocalRaid_result_${sessionId}_${Date.now()}.json`,
-        result
-      );
+      return;
+    }
 
+    try {
       const pmcData =
         this.profileHelper?.getPmcProfile(sessionId) ||
         this.profileHelper?.getFullProfile(sessionId);
       if (!pmcData) {
-        this.logger?.error(
-          `[StatTrackerFinalPatch] Failed to fetch pmcData for session ${sessionId}.`
-        );
+        this.logger?.error(`Failed to fetch pmcData for session: ${sessionId}`);
         return;
       }
 
@@ -233,32 +235,28 @@ class DetailedStatsTrackerFikaFinalPatch {
         startTime: Date.now(),
         timeOfDay,
       };
-      this.logger?.info(
-        `[StatTrackerFinalPatch] >>> CAPTURED Raid Start Info! Session: ${sessionId}, Map: ${mapName}`
-      );
+
+      await this.sendToFlask(`${this.apiUrl}/raid/start`, {
+        sessionId,
+        request,
+        result,
+      });
+      this.logger?.info(`Raid started. Session: ${sessionId}, Map: ${mapName}`);
     } catch (e) {
       this.logger?.error(
-        `[StatTrackerFinalPatch] Error during custom start processing: ${e}\n${e.stack}`
+        `Error during raid start processing: ${e}\n${e.stack}`
       );
     }
   }
 
   async handleRaidEnd([sessionId, matchId, request]) {
-    this.logger?.info(
-      "[StatTrackerFinalPatch] Executing custom raid end processing"
-    );
     try {
-      await this.saveJsonToDebugFile(
-        `onEndLocalRaidRequest_request_${sessionId}_${Date.now()}.json`,
-        request
-      );
-
       if (
         !this.currentRaidInfo ||
         this.currentRaidInfo.sessionId !== sessionId
       ) {
         this.logger?.warn(
-          `[StatTrackerFinalPatch] Raid end patch triggered for session ${sessionId}, but no matching start data found.`
+          `No matching raid start data for session: ${sessionId}`
         );
         return;
       }
@@ -272,8 +270,13 @@ class DetailedStatsTrackerFikaFinalPatch {
 
       if (this.isValidOffraidData(offraidData)) {
         this.logger?.info(
-          `[StatTrackerFinalPatch] <<< Found VALID offraidData! Session: ${sessionId}, Status: ${exitStatus}`
+          `Raid ended. Session: ${sessionId}, Status: ${exitStatus}`
         );
+        await this.sendToFlask(`${this.apiUrl}/raid/end`, {
+          sessionId,
+          matchId,
+          request,
+        });
         await this.processRaidEndData(
           sessionId,
           exitStatus,
@@ -281,20 +284,57 @@ class DetailedStatsTrackerFikaFinalPatch {
           offraidData
         );
       } else {
-        this.logger?.error(
-          `[StatTrackerFinalPatch] Invalid offraidData for session ${sessionId}!`
-        );
-        await this.logObjectDataForDebugging(
-          "Invalid/Missing offraidData",
-          offraidData
-        );
+        this.logger?.error(`Invalid offraidData for session: ${sessionId}`);
         this.currentRaidInfo = null;
       }
     } catch (e) {
-      this.logger?.error(
-        `[StatTrackerFinalPatch] Error during custom end processing: ${e}\n${e.stack}`
-      );
+      this.logger?.error(`Error during raid end processing: ${e}\n${e.stack}`);
       this.currentRaidInfo = null;
+    }
+  }
+
+  async sendToFlask(endpoint, data) {
+    if (!this.jsonUtil) {
+      this.logger?.error("Cannot send data to Flask - jsonUtil missing.");
+      return;
+    }
+    try {
+      const serializedData = this.jsonUtil.serialize(data, true);
+      const options = {
+        hostname: "127.0.0.1",
+        port: 5000,
+        path: endpoint.replace("http://127.0.0.1:5000", ""),
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Content-Length": Buffer.byteLength(serializedData),
+        },
+      };
+
+      await new Promise((resolve, reject) => {
+        const req = https.request(options, (res) => {
+          let responseData = "";
+          res.on("data", (chunk) => (responseData += chunk));
+          res.on("end", () => {
+            if (res.statusCode >= 200 && res.statusCode < 300) {
+              this.logger?.info(`Data sent to Flask: ${endpoint}`);
+              resolve();
+            } else {
+              reject(new Error(`Flask API error: ${res.statusCode}`));
+            }
+          });
+        });
+
+        req.on("error", (e) => {
+          reject(new Error(`HTTP request failed: ${e.message}`));
+        });
+
+        req.write(serializedData);
+        req.end();
+      });
+    } catch (e) {
+      this.logger?.error(`Failed to send data to Flask: ${e.message}`);
+      this.logger?.debug(`Error details: ${e.stack}`);
     }
   }
 
@@ -308,45 +348,6 @@ class DetailedStatsTrackerFikaFinalPatch {
     );
   }
 
-  async saveJsonToDebugFile(filename, data) {
-    if (!this.jsonUtil) {
-      this.logger?.error(
-        "[StatTrackerFinalPatch] Cannot save debug JSON - jsonUtil missing."
-      );
-      return;
-    }
-    try {
-      const debugFolderPath = path.join(__dirname, "debug_logs");
-      await fs.mkdir(debugFolderPath, { recursive: true });
-      const filePath = path.join(debugFolderPath, filename);
-      await fs.writeFile(filePath, this.jsonUtil.serialize(data, true), "utf8");
-      this.logger?.info(
-        `[StatTrackerFinalPatch] Saved debug data to: ${filePath}`
-      );
-    } catch (e) {
-      this.logger?.error(
-        `[StatTrackerFinalPatch] Failed to save debug JSON to ${filename}: ${e}`
-      );
-    }
-  }
-
-  async logObjectDataForDebugging(label, data) {
-    if (!this.jsonUtil) {
-      this.logger?.error(`Cannot log object ${label}, jsonUtil missing`);
-      return;
-    }
-    try {
-      const serializedData = this.jsonUtil.serialize(data, true, 4);
-      this.logger?.info(
-        `[StatTrackerFinalPatch] --- ${label} --- \n${serializedData}`
-      );
-    } catch (e) {
-      this.logger?.error(
-        `[StatTrackerFinalPatch] Error serializing data for ${label}: ${e}`
-      );
-    }
-  }
-
   async processRaidEndData(sessionId, exitStatus, exitName, offraidData) {
     if (
       !this.currentRaidInfo ||
@@ -354,9 +355,7 @@ class DetailedStatsTrackerFikaFinalPatch {
       !this.databaseServer ||
       !this.jsonUtil
     ) {
-      this.logger?.error(
-        "[StatTrackerFinalPatch] Invalid session or missing services!"
-      );
+      this.logger?.error("Invalid session or missing services!");
       this.currentRaidInfo = null;
       return;
     }
@@ -366,7 +365,7 @@ class DetailedStatsTrackerFikaFinalPatch {
     const endTime = Date.now();
     const durationSeconds = Math.floor((endTime - raidInfo.startTime) / 1000);
     this.logger?.info(
-      `[StatTrackerFinalPatch] Processing Raid End. Session: ${sessionId}, Status: ${exitStatus}, Time: ${durationSeconds}s`
+      `Processing raid end. Session: ${sessionId}, Status: ${exitStatus}, Duration: ${durationSeconds}s`
     );
 
     try {
@@ -416,24 +415,20 @@ class DetailedStatsTrackerFikaFinalPatch {
           });
         }
         this.logger?.info(
-          `[StatTrackerFinalPatch] Processed ${processedRaidStats.kills.length} kills for raid ${sessionId}.`
+          `Processed ${processedRaidStats.kills.length} kills for session: ${sessionId}`
         );
       }
 
       await this.updatePersistentStats(processedRaidStats);
       await this.savePersistentStats();
     } catch (e) {
-      this.logger?.error(
-        `[StatTrackerFinalPatch] Error processing raid end data: ${e}\n${e.stack}`
-      );
+      this.logger?.error(`Error processing raid end data: ${e}\n${e.stack}`);
     }
   }
 
   async loadConfig() {
     if (!this.jsonUtil) {
-      this.logger?.error(
-        "[StatTrackerFinalPatch] Cannot load config: JsonUtil not initialized!"
-      );
+      this.logger?.error("Cannot load config: JsonUtil not initialized!");
       this.setDefaultConfig();
       return;
     }
@@ -442,13 +437,9 @@ class DetailedStatsTrackerFikaFinalPatch {
       const configContent = await fs.readFile(configPath, "utf8");
       this.modConfig = this.jsonUtil.deserialize(configContent);
       this.ensureDefaultConfigValues();
-      this.logger?.info(
-        "[StatTrackerFinalPatch] Configuration loaded successfully."
-      );
+      this.logger?.info("Configuration loaded successfully.");
     } catch (e) {
-      this.logger?.warn(
-        `[StatTrackerFinalPatch] Error loading config: ${e}. Using default config.`
-      );
+      this.logger?.warn(`Error loading config: ${e}. Using default config.`);
       this.setDefaultConfig();
       await this.saveConfig();
     }
@@ -462,9 +453,7 @@ class DetailedStatsTrackerFikaFinalPatch {
       maxRaidHistory: 50,
       persistentStatsFilePath: "stats_data.json",
     };
-    this.logger?.info(
-      "[StatTrackerFinalPatch] Default configuration set/reset."
-    );
+    this.logger?.info("Default configuration set.");
   }
 
   ensureDefaultConfigValues() {
@@ -477,17 +466,13 @@ class DetailedStatsTrackerFikaFinalPatch {
       }
     }
     if (changed) {
-      this.logger?.info(
-        "[StatTrackerFinalPatch] Added missing default config values."
-      );
+      this.logger?.info("Added missing default config values.");
     }
   }
 
   async saveConfig() {
     if (!this.jsonUtil) {
-      this.logger?.error(
-        "[StatTrackerFinalPatch] Cannot save config: JsonUtil not initialized!"
-      );
+      this.logger?.error("Cannot save config: JsonUtil not initialized!");
       return;
     }
     const configPath = path.join(__dirname, "config", "config.json");
@@ -499,20 +484,16 @@ class DetailedStatsTrackerFikaFinalPatch {
         this.jsonUtil.serialize(this.modConfig, true),
         "utf8"
       );
-      this.logger?.info(
-        `[StatTrackerFinalPatch] Saved config file to: ${configPath}`
-      );
+      this.logger?.info(`Saved config file to: ${configPath}`);
     } catch (e) {
-      this.logger?.error(
-        `[StatTrackerFinalPatch] Could not save config file: ${e}`
-      );
+      this.logger?.error(`Could not save config file: ${e}`);
     }
   }
 
   async loadPersistentStats() {
     if (!this.jsonUtil) {
       this.logger?.error(
-        "[StatTrackerFinalPatch] Cannot load persistent stats: JsonUtil not initialized!"
+        "Cannot load persistent stats: JsonUtil not initialized!"
       );
       this.initializePersistentStats();
       return;
@@ -530,18 +511,14 @@ class DetailedStatsTrackerFikaFinalPatch {
         Object.keys(this.persistentStats).length === 0
       ) {
         this.logger?.warn(
-          "[StatTrackerFinalPatch] Loaded stats empty or corrupted. Initializing empty stats."
+          "Loaded stats empty or corrupted. Initializing empty stats."
         );
         this.initializePersistentStats();
       } else {
-        this.logger?.info(
-          "[StatTrackerFinalPatch] Persistent stats loaded successfully."
-        );
+        this.logger?.info("Persistent stats loaded successfully.");
       }
     } catch (e) {
-      this.logger?.warn(
-        `[StatTrackerFinalPatch] Error loading stats: ${e}. Initializing empty stats.`
-      );
+      this.logger?.warn(`Error loading stats: ${e}. Initializing empty stats.`);
       this.initializePersistentStats();
     }
   }
@@ -556,15 +533,13 @@ class DetailedStatsTrackerFikaFinalPatch {
       raidHistory: [],
       playerStatsSnapshot: {},
     };
-    this.logger?.info(
-      "[StatTrackerFinalPatch] Initialized empty persistent stats."
-    );
+    this.logger?.info("Initialized empty persistent stats.");
   }
 
   async savePersistentStats() {
     if (!this.jsonUtil) {
       this.logger?.error(
-        "[StatTrackerFinalPatch] Cannot save persistent stats: JsonUtil not initialized!"
+        "Cannot save persistent stats: JsonUtil not initialized!"
       );
       return;
     }
@@ -578,19 +553,15 @@ class DetailedStatsTrackerFikaFinalPatch {
         this.jsonUtil.serialize(this.persistentStats, true),
         "utf8"
       );
-      this.logger?.info(
-        "[StatTrackerFinalPatch] Persistent stats saved successfully."
-      );
+      this.logger?.info("Persistent stats saved successfully.");
     } catch (e) {
-      this.logger?.error(
-        `[StatTrackerFinalPatch] Could not save persistent stats: ${e}`
-      );
+      this.logger?.error(`Could not save persistent stats: ${e}`);
     }
   }
 
   async updatePersistentStats(processedRaidStats) {
     this.logger?.info(
-      `[StatTrackerFinalPatch] Updating persistent stats for raid on ${processedRaidStats.map}.`
+      `Updating persistent stats for raid on ${processedRaidStats.map}.`
     );
     if (!this.persistentStats || typeof this.persistentStats !== "object") {
       this.initializePersistentStats();
@@ -628,7 +599,7 @@ class DetailedStatsTrackerFikaFinalPatch {
     ) {
       this.persistentStats.raidHistory.shift();
     }
-    this.logger?.info("[StatTrackerFinalPatch] Persistent stats updated.");
+    this.logger?.info("Persistent stats updated.");
   }
 }
 

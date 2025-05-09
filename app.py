@@ -1,35 +1,29 @@
 import os
 import json
 import math
-import glob
 import datetime
-import locale # Do formatowania liczb
-from flask import Flask, render_template, abort, url_for, jsonify # Dodano jsonify
+import locale
+from flask import Flask, render_template, abort, jsonify, request
 from collections import defaultdict
 
-# Ustawienie polskiego locale dla formatowania liczb (może wymagać instalacji w systemie)
+# Ustawienie polskiego locale dla formatowania liczb
 try:
-    # Dla systemów Unix/Linux
     locale.setlocale(locale.LC_ALL, 'pl_PL.UTF-8')
 except locale.Error:
     try:
-        # Dla Windows
         locale.setlocale(locale.LC_ALL, 'Polish_Poland.1250')
     except locale.Error:
         print("OSTRZEŻENIE: Nie można ustawić polskiego locale. Formatowanie liczb może być domyślne.")
 
-
-# Flask domyślnie używa folderu 'static'
 app = Flask(__name__, static_folder='static')
-app.json.ensure_ascii = False # Aby poprawnie obsługiwać polskie znaki w JSON
+app.json.ensure_ascii = False  # Obsługa polskich znaków w JSON
 
 # --- Konfiguracja Ścieżek ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DEBUG_LOGS_FOLDER = os.path.join(BASE_DIR, 'debug_logs')
 TRANSLATE_FOLDER = os.path.join(BASE_DIR, 'translate')
 TRANSLATION_FILENAME = 'pl.json'
-RAID_FILE_PATTERN = 'onEndLocalRaidRequest_request_*.json'
 TRANSLATION_FILE_PATH = os.path.join(TRANSLATE_FOLDER, TRANSLATION_FILENAME)
+RAID_DATA_FILE = os.path.join(BASE_DIR, 'raid_data.json')
 
 MAP_IMAGES = {
     "Fabryce": "factory.avif",
@@ -70,7 +64,9 @@ load_translations()
 # --- Funkcje Pomocnicze ---
 def get_item_name(item_id):
     if not translations or not item_id: return str(item_id)
-    short_name_key = f"{item_id} ShortName"; name_key = f"{item_id} Name"; plain_id_key = str(item_id)
+    short_name_key = f"{item_id} ShortName"
+    name_key = f"{item_id} Name"
+    plain_id_key = str(item_id)
     fallback_keys = {
         "pmcBEAR": "PMC BEAR", "pmcUSEC": "PMC USEC", "sptBear": "SPT BEAR", "sptUsec": "SPT USEC",
         "assault": "Szturmowiec (Scav)", "marksman": "Snajper (Scav)", "exUsec": "Renegat",
@@ -89,12 +85,11 @@ def get_item_name(item_id):
         "Head": "Głowa", "Chest": "Klatka piersiowa", "Stomach": "Brzuch",
         "LeftArm": "Lewa ręka", "RightArm": "Prawa ręka",
         "LeftLeg": "Lewa noga", "RightLeg": "Prawa noga",
-        "Destroyed": "Zniszczona" # Dla efektów
+        "Destroyed": "Zniszczona"
     }
     return translations.get(short_name_key, translations.get(name_key, translations.get(plain_id_key, fallback_keys.get(str(item_id), str(item_id)))))
 
 def format_exp(exp):
-    """Formatuje EXP z separatorami."""
     try:
         return locale.format_string("%d", int(exp), grouping=True)
     except (ValueError, TypeError):
@@ -105,18 +100,20 @@ def format_time(seconds):
     try:
         seconds = int(seconds)
         if seconds < 0: seconds = 0
-        hours = seconds // 3600; minutes = (seconds % 3600) // 60; remaining_seconds = seconds % 60
+        hours = seconds // 3600
+        minutes = (seconds % 3600) // 60
+        remaining_seconds = seconds % 60
         if hours > 0: return f"{hours:02d}:{minutes:02d}:{remaining_seconds:02d}"
         else: return f"{minutes:02d}:{remaining_seconds:02d}"
     except (ValueError, TypeError): return "N/A"
 
 def format_distance(meters):
-     if meters is None: return "N/A"
-     try:
-         meters = float(meters)
-         if meters >= 1000: return f"{meters / 1000:.2f} km"
-         else: return f"{meters:.1f} m"
-     except (ValueError, TypeError): return "N/A"
+    if meters is None: return "N/A"
+    try:
+        meters = float(meters)
+        if meters >= 1000: return f"{meters / 1000:.2f} km"
+        else: return f"{meters:.1f} m"
+    except (ValueError, TypeError): return "N/A"
 
 def format_timestamp(ts):
     if ts is None: return "N/A"
@@ -127,7 +124,8 @@ def format_timestamp(ts):
     except (ValueError, TypeError, OSError): return "N/A"
 
 def process_item_list(items_dict_or_list, count_key='count', id_key='_tpl'):
-    processed_items = []; item_counts = defaultdict(int)
+    processed_items = []
+    item_counts = defaultdict(int)
     items_to_process = []
     if isinstance(items_dict_or_list, dict): items_to_process = items_dict_or_list.values()
     elif isinstance(items_dict_or_list, list): items_to_process = items_dict_or_list
@@ -148,7 +146,8 @@ def extract_session_stats(session_counters):
     stats = {'damage_dealt': 0, 'body_parts_destroyed': 0, 'pedometer': 0, 'exp_kill': 0, 'exp_looting': 0, 'exp_exit_status': 0, 'deaths': 0, 'blood_loss': 0, 'damage_received_total': 0, 'damage_received_details': {}}
     if session_counters and 'Items' in session_counters:
         for item in session_counters.get('Items', []):
-            key = item.get('Key'); value = item.get('Value', 0)
+            key = item.get('Key')
+            value = item.get('Value', 0)
             if key and isinstance(key, list):
                 try:
                     key_str = "_".join(map(str, key))
@@ -176,7 +175,8 @@ def extract_overall_stats(overall_counters):
     stats = {'kills': 0, 'deaths': 0, 'sessions': 0, 'survived_sessions': 0, 'headshots': 0, 'longest_shot': 0}
     if overall_counters and 'Items' in overall_counters:
         for item in overall_counters.get('Items', []):
-            key = item.get('Key'); value = item.get('Value', 0)
+            key = item.get('Key')
+            value = item.get('Value', 0)
             if key and isinstance(key, list):
                 try:
                     key_str = "_".join(map(str, key))
@@ -210,7 +210,7 @@ def extract_changed_skills(skills_data):
                     changed.append(skill_copy)
                 except (ValueError, TypeError): print(f"OSTRZEŻENIE: Problem z formatowaniem danych umiejętności Common: {skill}")
     if 'Mastering' in skills_data and skills_data['Mastering']:
-         for skill in skills_data['Mastering']:
+        for skill in skills_data['Mastering']:
             if not isinstance(skill, dict): continue
             points_earned = skill.get('PointsEarnedDuringSession', 0)
             progress = skill.get('Progress', 0)
@@ -226,164 +226,212 @@ def extract_changed_skills(skills_data):
     changed.sort(key=lambda x: (x.get('SkillType', ''), -x.get('PointsEarnedDuringSession', 0), -x.get('Progress', 0)))
     return changed
 
-def get_timestamp_from_filename(filename):
-    try:
-        base_name = os.path.splitext(filename)[0]
-        timestamp_ms_str = base_name.split('_')[-1]
-        if not timestamp_ms_str.isdigit(): raise ValueError("Ostatni segment nazwy pliku nie jest liczbą.")
-        timestamp_ms = int(timestamp_ms_str)
-        return datetime.datetime.fromtimestamp(timestamp_ms / 1000)
-    except (IndexError, ValueError, TypeError):
-        print(f"OSTRZEŻENIE: Nie można wyekstrahować timestampu z nazwy pliku: {filename}. Używam czasu modyfikacji pliku.")
-        try:
-            full_path = os.path.join(DEBUG_LOGS_FOLDER, filename)
-            if os.path.exists(full_path): return datetime.datetime.fromtimestamp(os.path.getmtime(full_path))
-            else: return datetime.datetime.min
-        except Exception: return datetime.datetime.min
-
-def process_single_raid_file(filepath):
-    try:
-        with open(filepath, 'r', encoding='utf-8') as f: data = json.load(f)
-    except FileNotFoundError: return None, f"Plik nie znaleziony: {os.path.basename(filepath)}"
-    except json.JSONDecodeError as e: return None, f"Błąd parsowania JSON w pliku {os.path.basename(filepath)}: {e}"
-    except Exception as e: return None, f"Nieoczekiwany błąd wczytywania pliku {os.path.basename(filepath)}: {e}"
-
+def process_single_raid_data(data, timestamp_ms, is_start=False):
     processed_data = {}
-    error_message = None
     try:
-        if not data or 'results' not in data: raise ValueError("Brak klucza 'results' w danych JSON.")
-        results = data.get('results', {}); profile = results.get('profile', {})
-        if not profile: raise ValueError("Brak klucza 'profile' w 'results'.")
-        info = profile.get('Info', {}); stats_eft = profile.get('Stats', {}).get('Eft', {}); health_info = profile.get('Health', {})
+        session_id = data.get('sessionId')
+        if is_start:
+            request = data.get('request', {})
+            result = data.get('result', {})
+            processed_data['filename'] = f"startLocalRaid_request_{session_id}_{timestamp_ms}.json"
+            processed_data['timestamp'] = datetime.datetime.fromtimestamp(timestamp_ms / 1000)
+            processed_data['timestamp_formatted'] = processed_data['timestamp'].strftime('%Y-%m-%d %H:%M:%S')
+            processed_data['location_id'] = request.get('location', 'unknown')
+            processed_data['location'] = get_item_name(processed_data['location_id'])
+            processed_data['time_of_day'] = request.get('timeAndWeatherSettings', {}).get('timeVariant', 'unknown')
+            processed_data['profile_id'] = session_id
+        else:
+            results = data.get('request', {}).get('results', {})
+            profile = results.get('profile', {})
+            info = profile.get('Info', {})
+            stats_eft = profile.get('Stats', {}).get('Eft', {})
+            health_info = profile.get('Health', {})
 
-        processed_data['filename'] = os.path.basename(filepath)
-        processed_data['timestamp'] = get_timestamp_from_filename(processed_data['filename'])
-        processed_data['timestamp_formatted'] = processed_data['timestamp'].strftime('%Y-%m-%d %H:%M:%S') if processed_data['timestamp'] != datetime.datetime.min else "N/A"
-        processed_data['server_id'] = data.get('serverId'); processed_data['raid_result'] = results.get('result')
-        processed_data['exit_name'] = results.get('exitName') if processed_data['raid_result'] == 'Survived' else None # Tylko dla Survived
-        processed_data['location_id'] = info.get('EntryPoint'); processed_data['location'] = get_item_name(processed_data['location_id'])
-        processed_data['nickname'] = info.get('Nickname'); processed_data['level'] = info.get('Level'); processed_data['side'] = info.get('Side')
-        processed_data['total_experience'] = info.get('Experience'); processed_data['karma_value'] = profile.get('karmaValue')
-        processed_data['registration_date_ts'] = info.get('RegistrationDate'); processed_data['registration_date_formatted'] = format_timestamp(processed_data['registration_date_ts'])
-        processed_data['game_version'] = info.get('GameVersion'); processed_data['voice'] = info.get('Voice'); processed_data['group_id'] = info.get('GroupId')
-        processed_data['team_id'] = info.get('TeamId'); processed_data['profile_id'] = profile.get('_id'); processed_data['account_id'] = profile.get('aid')
-        processed_data['killer_profile_id'] = results.get('killerId'); processed_data['killer_account_id'] = results.get('killerAid')
+            processed_data['filename'] = f"onEndLocalRaidRequest_request_{session_id}_{timestamp_ms}.json"
+            processed_data['timestamp'] = datetime.datetime.fromtimestamp(timestamp_ms / 1000)
+            processed_data['timestamp_formatted'] = processed_data['timestamp'].strftime('%Y-%m-%d %H:%M:%S')
+            processed_data['server_id'] = data.get('request', {}).get('serverId')
+            processed_data['raid_result'] = results.get('result')
+            processed_data['exit_name'] = results.get('exitName') if processed_data['raid_result'] == 'Survived' else None
+            processed_data['location_id'] = info.get('EntryPoint')
+            processed_data['location'] = get_item_name(processed_data['location_id'])
+            processed_data['nickname'] = info.get('Nickname')
+            processed_data['level'] = info.get('Level')
+            processed_data['side'] = info.get('Side')
+            processed_data['total_experience'] = info.get('Experience')
+            processed_data['karma_value'] = profile.get('karmaValue')
+            processed_data['registration_date_ts'] = info.get('RegistrationDate')
+            processed_data['registration_date_formatted'] = format_timestamp(processed_data['registration_date_ts'])
+            processed_data['game_version'] = info.get('GameVersion')
+            processed_data['voice'] = info.get('Voice')
+            processed_data['group_id'] = info.get('GroupId')
+            processed_data['team_id'] = info.get('TeamId')
+            processed_data['profile_id'] = profile.get('_id')
+            processed_data['account_id'] = profile.get('aid')
+            processed_data['killer_profile_id'] = results.get('killerId')
+            processed_data['killer_account_id'] = results.get('killerAid')
 
-        total_in_game_time = stats_eft.get('TotalInGameTime') if stats_eft else None
-        play_time_fallback = results.get('playTime')
-        raid_duration_seconds = total_in_game_time if total_in_game_time is not None else play_time_fallback
-        processed_data['play_time_seconds'] = raid_duration_seconds; processed_data['play_time_formatted'] = format_time(raid_duration_seconds)
-        processed_data['total_session_exp_from_json'] = stats_eft.get('TotalSessionExperience', 0) if stats_eft else 0
-        session_counters = stats_eft.get('SessionCounters') if stats_eft else None
-        processed_data['session_stats'] = extract_session_stats(session_counters)
-        exp_sum_from_counters = sum(v for k, v in processed_data['session_stats'].items() if k.startswith('exp_'))
-        processed_data['total_session_exp_calculated'] = round(exp_sum_from_counters)
-        processed_data['session_exp_mult'] = stats_eft.get('SessionExperienceMult', 1) if stats_eft else 1
-        processed_data['experience_bonus_mult'] = stats_eft.get('ExperienceBonusMult', 1) if stats_eft else 1
-        processed_data['survivor_class'] = stats_eft.get('SurvivorClass') if stats_eft else None
-        processed_data['last_session_date_ts'] = stats_eft.get('LastSessionDate') if stats_eft else None
-        processed_data['last_session_date_formatted'] = format_timestamp(processed_data['last_session_date_ts'])
+            total_in_game_time = stats_eft.get('TotalInGameTime')
+            play_time_fallback = results.get('playTime')
+            raid_duration_seconds = total_in_game_time if total_in_game_time is not None else play_time_fallback
+            processed_data['play_time_seconds'] = raid_duration_seconds
+            processed_data['play_time_formatted'] = format_time(raid_duration_seconds)
+            processed_data['total_session_exp_from_json'] = stats_eft.get('TotalSessionExperience', 0)
+            session_counters = stats_eft.get('SessionCounters')
+            processed_data['session_stats'] = extract_session_stats(session_counters)
+            exp_sum_from_counters = sum(v for k, v in processed_data['session_stats'].items() if k.startswith('exp_'))
+            processed_data['total_session_exp_calculated'] = round(exp_sum_from_counters)
+            processed_data['session_exp_mult'] = stats_eft.get('SessionExperienceMult', 1)
+            processed_data['experience_bonus_mult'] = stats_eft.get('ExperienceBonusMult', 1)
+            processed_data['survivor_class'] = stats_eft.get('SurvivorClass')
+            processed_data['last_session_date_ts'] = stats_eft.get('LastSessionDate')
+            processed_data['last_session_date_formatted'] = format_timestamp(processed_data['last_session_date_ts'])
 
-        processed_data['killer_info'] = None
-        if processed_data['raid_result'] == 'Killed' and stats_eft:
-            aggressor = stats_eft.get('Aggressor'); death_cause = stats_eft.get('DeathCause'); damage_history = stats_eft.get('DamageHistory', {})
-            killer_data = {}
-            if aggressor:
-                killer_data['name'] = aggressor.get('Name'); killer_data['side'] = aggressor.get('Side'); killer_data['role_raw'] = aggressor.get('Role')
-                killer_data['role_translated'] = get_item_name(killer_data['role_raw']); killer_data['aggressor_profile_id'] = aggressor.get('ProfileId') or aggressor.get('GInterface187.ProfileId')
-                killer_data['aggressor_account_id'] = aggressor.get('AccountId')
-            if death_cause:
-                 killer_data['weapon_id'] = death_cause.get('WeaponId'); killer_data['weapon_name'] = get_item_name(killer_data['weapon_id'])
-                 killer_data['death_cause_damage_type_raw'] = death_cause.get('DamageType'); killer_data['death_cause_damage_type_translated'] = get_item_name(killer_data['death_cause_damage_type_raw'])
-                 killer_data['death_cause_side'] = death_cause.get('Side'); killer_data['death_cause_role_raw'] = death_cause.get('Role')
-                 killer_data['death_cause_role_translated'] = get_item_name(killer_data['death_cause_role_raw'])
-            killer_data['killed_by_part_raw'] = damage_history.get('LethalDamagePart'); killer_data['killed_by_part_translated'] = get_item_name(killer_data['killed_by_part_raw'])
-            lethal_damage_info = damage_history.get('LethalDamage', {})
-            if lethal_damage_info:
-                killer_data['lethal_damage_amount'] = round(lethal_damage_info.get('Amount', 0), 1); killer_data['lethal_damage_type_raw'] = lethal_damage_info.get('Type')
-                killer_data['lethal_damage_type_translated'] = get_item_name(killer_data['lethal_damage_type_raw']); killer_data['lethal_damage_source_id'] = lethal_damage_info.get('SourceId')
-                killer_data['lethal_damage_source_name'] = get_item_name(killer_data['lethal_damage_source_id']); killer_data['lethal_damage_blunt'] = lethal_damage_info.get('Blunt', False)
-                killer_data['lethal_damage_impacts'] = lethal_damage_info.get('ImpactsCount')
-            processed_data['killer_info'] = killer_data
+            processed_data['killer_info'] = None
+            if processed_data['raid_result'] == 'Killed':
+                aggressor = stats_eft.get('Aggressor')
+                death_cause = stats_eft.get('DeathCause')
+                damage_history = stats_eft.get('DamageHistory', {})
+                killer_data = {}
+                if aggressor:
+                    killer_data['name'] = aggressor.get('Name')
+                    killer_data['side'] = aggressor.get('Side')
+                    killer_data['role_raw'] = aggressor.get('Role')
+                    killer_data['role_translated'] = get_item_name(killer_data['role_raw'])
+                    killer_data['aggressor_profile_id'] = aggressor.get('ProfileId') or aggressor.get('GInterface187.ProfileId')
+                    killer_data['aggressor_account_id'] = aggressor.get('AccountId')
+                if death_cause:
+                    killer_data['weapon_id'] = death_cause.get('WeaponId')
+                    killer_data['weapon_name'] = get_item_name(killer_data['weapon_id'])
+                    killer_data['death_cause_damage_type_raw'] = death_cause.get('DamageType')
+                    killer_data['death_cause_damage_type_translated'] = get_item_name(killer_data['death_cause_damage_type_raw'])
+                    killer_data['death_cause_side'] = death_cause.get('Side')
+                    killer_data['death_cause_role_raw'] = death_cause.get('Role')
+                    killer_data['death_cause_role_translated'] = get_item_name(killer_data['death_cause_role_raw'])
+                killer_data['killed_by_part_raw'] = damage_history.get('LethalDamagePart')
+                killer_data['killed_by_part_translated'] = get_item_name(killer_data['killed_by_part_raw'])
+                lethal_damage_info = damage_history.get('LethalDamage', {})
+                if lethal_damage_info:
+                    killer_data['lethal_damage_amount'] = round(lethal_damage_info.get('Amount', 0), 1)
+                    killer_data['lethal_damage_type_raw'] = lethal_damage_info.get('Type')
+                    killer_data['lethal_damage_type_translated'] = get_item_name(killer_data['lethal_damage_type_raw'])
+                    killer_data['lethal_damage_source_id'] = lethal_damage_info.get('SourceId')
+                    killer_data['lethal_damage_source_name'] = get_item_name(killer_data['lethal_damage_source_id'])
+                    killer_data['lethal_damage_blunt'] = lethal_damage_info.get('Blunt', False)
+                    killer_data['lethal_damage_impacts'] = lethal_damage_info.get('ImpactsCount')
+                processed_data['killer_info'] = killer_data
 
-        body_parts = health_info.get('BodyParts'); processed_data['final_health'] = {}
-        if body_parts:
-            for part_id, details in body_parts.items():
-                 health_details = details.get('Health', {}); effects = details.get('Effects', {}); active_effects = []
-                 for effect_id, effect_details in effects.items():
-                      if isinstance(effect_details, dict) and effect_details.get('Time', -1) > -1: active_effects.append(get_item_name(effect_id))
-                 processed_data['final_health'][get_item_name(part_id)] = {
-                     'current': round(health_details.get('Current', 0), 1), 'maximum': health_details.get('Maximum', 1), 'effects': active_effects }
-        processed_data['final_vitals'] = {
-            'Energy': round(health_info.get('Energy', {}).get('Current', 0)), 'Hydration': round(health_info.get('Hydration', {}).get('Current', 0)),
-            'Temperature': round(health_info.get('Temperature', {}).get('Current', 0)), 'Poison': round(health_info.get('Poison', {}).get('Current', 0)),
-            'MaxEnergy': health_info.get('Energy', {}).get('Maximum', 110), 'MaxHydration': health_info.get('Hydration', {}).get('Maximum', 100) }
+            body_parts = health_info.get('BodyParts')
+            processed_data['final_health'] = {}
+            if body_parts:
+                for part_id, details in body_parts.items():
+                    health_details = details.get('Health', {})
+                    effects = details.get('Effects', {})
+                    active_effects = []
+                    for effect_id, effect_details in effects.items():
+                        if isinstance(effect_details, dict) and effect_details.get('Time', -1) > -1:
+                            active_effects.append(get_item_name(effect_id))
+                    processed_data['final_health'][get_item_name(part_id)] = {
+                        'current': round(health_details.get('Current', 0), 1),
+                        'maximum': health_details.get('Maximum', 1),
+                        'effects': active_effects
+                    }
+            processed_data['final_vitals'] = {
+                'Energy': round(health_info.get('Energy', {}).get('Current', 0)),
+                'Hydration': round(health_info.get('Hydration', {}).get('Current', 0)),
+                'Temperature': round(health_info.get('Temperature', {}).get('Current', 0)),
+                'Poison': round(health_info.get('Poison', {}).get('Current', 0)),
+                'MaxEnergy': health_info.get('Energy', {}).get('Maximum', 110),
+                'MaxHydration': health_info.get('Hydration', {}).get('Maximum', 100)
+            }
 
-        skills_data = profile.get('Skills', {}); processed_data['skills_changed'] = extract_changed_skills(skills_data)
+            skills_data = profile.get('Skills', {})
+            processed_data['skills_changed'] = extract_changed_skills(skills_data)
 
-        victims_list = stats_eft.get('Victims', []) if stats_eft else []; processed_victims = []
-        for victim in victims_list:
-             if not isinstance(victim, dict): continue
-             victim_copy = victim.copy()
-             victim_copy['WeaponName'] = get_item_name(victim_copy.get('Weapon')); victim_copy['DistanceFormatted'] = format_distance(victim_copy.get('Distance'))
-             victim_copy['RoleTranslated'] = get_item_name(victim_copy.get('Role')); victim_copy['SideTranslated'] = get_item_name(victim_copy.get('Side'))
-             victim_copy['BodyPartTranslated'] = get_item_name(victim_copy.get('BodyPart')); processed_victims.append(victim_copy)
-        processed_data['victims'] = processed_victims; processed_data['kills_count'] = len(processed_victims)
+            victims_list = stats_eft.get('Victims', [])
+            processed_victims = []
+            for victim in victims_list:
+                if not isinstance(victim, dict): continue
+                victim_copy = victim.copy()
+                victim_copy['WeaponName'] = get_item_name(victim_copy.get('Weapon'))
+                victim_copy['DistanceFormatted'] = format_distance(victim_copy.get('Distance'))
+                victim_copy['RoleTranslated'] = get_item_name(victim_copy.get('Role'))
+                victim_copy['SideTranslated'] = get_item_name(victim_copy.get('Side'))
+                victim_copy['BodyPartTranslated'] = get_item_name(victim_copy.get('BodyPart'))
+                processed_victims.append(victim_copy)
+            processed_data['victims'] = processed_victims
+            processed_data['kills_count'] = len(processed_victims)
 
-        processed_data['transfer_items'] = process_item_list(data.get('transferItems', {}), id_key='_tpl')
-        processed_data['found_in_raid_items'] = process_item_list(stats_eft.get('FoundInRaidItems', []), id_key='ItemId') if stats_eft else []
-        processed_data['lost_insured_items'] = process_item_list(data.get('lostInsuredItems', []), id_key='ItemId')
-        processed_data['carried_quest_items'] = process_item_list(stats_eft.get('CarriedQuestItems', []), id_key='ItemId') if stats_eft else []
-        processed_data['dropped_items'] = process_item_list(stats_eft.get('DroppedItems', []), id_key='ItemId') if stats_eft else []
+            processed_data['transfer_items'] = process_item_list(data.get('request', {}).get('transferItems', {}))
+            processed_data['found_in_raid_items'] = process_item_list(stats_eft.get('FoundInRaidItems', []), id_key='ItemId')
+            processed_data['lost_insured_items'] = process_item_list(data.get('request', {}).get('lostInsuredItems', []), id_key='ItemId')
+            processed_data['carried_quest_items'] = process_item_list(stats_eft.get('CarriedQuestItems', []), id_key='ItemId')
+            processed_data['dropped_items'] = process_item_list(stats_eft.get('DroppedItems', []), id_key='ItemId')
 
-        overall_counters = stats_eft.get('OverallCounters') if stats_eft else None
-        processed_data['overall_stats'] = extract_overall_stats(overall_counters)
-        processed_data['player_count_in_raid'] = 1 # Placeholder
+            overall_counters = stats_eft.get('OverallCounters')
+            processed_data['overall_stats'] = extract_overall_stats(overall_counters)
+            processed_data['player_count_in_raid'] = 1  # Placeholder
 
-    except ValueError as e: error_message = f"Błąd przetwarzania danych w pliku {os.path.basename(filepath)}: {e}"; print(f"BŁĄD: {error_message}")
-    except Exception as e: error_message = f"Nieoczekiwany błąd przetwarzania danych raportu {os.path.basename(filepath)}: {e}"; print(f"BŁĄD: {error_message}"); import traceback; traceback.print_exc()
-    return processed_data if not error_message else None, error_message
+        return processed_data, None
+    except Exception as e:
+        error_message = f"Nieoczekiwany błąd przetwarzania danych: {e}"
+        print(f"BŁĄD: {error_message}")
+        import traceback
+        traceback.print_exc()
+        return None, error_message
 
-def load_all_raid_data():
-    all_processed_raids = []
+def save_raid_data_to_file(all_raids):
+    try:
+        with open(RAID_DATA_FILE, 'w', encoding='utf-8') as f:
+            json.dump(all_raids, f, ensure_ascii=False, indent=2)
+        print(f"Zapisano dane rajdów do: {RAID_DATA_FILE}")
+    except Exception as e:
+        print(f"BŁĄD: Nie można zapisać danych rajdów do pliku: {e}")
+
+def load_raid_data_from_file():
+    if not os.path.exists(RAID_DATA_FILE):
+        print(f"OSTRZEŻENIE: Plik danych rajdów nie istnieje: {RAID_DATA_FILE}")
+        return []
+    try:
+        with open(RAID_DATA_FILE, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except json.JSONDecodeError as e:
+        print(f"BŁĄD: Nie można sparsować pliku danych rajdów: {e}")
+        return []
+    except Exception as e:
+        print(f"BŁĄD: Nieoczekiwany problem podczas wczytywania danych rajdów: {e}")
+        return []
+
+def update_raid_data_cache():
+    all_raids = load_raid_data_from_file()
     players_summary = defaultdict(lambda: {
         'raid_ids': [], 'latest_timestamp': datetime.datetime.min, 'latest_level': None, 'latest_side': None,
         'latest_total_experience': 0, 'raid_count': 0, 'total_kills': 0, 'total_deaths': 0,
         'total_survived': 0, 'total_headshots': 0, 'calculated_kd': 'N/A', 'overall_stats_latest': {},
-        'latest_total_experience_formatted': '0' # Dodajemy sformatowane pole
+        'latest_total_experience_formatted': '0'
     })
     errors = []
-    raid_files = glob.glob(os.path.join(DEBUG_LOGS_FOLDER, RAID_FILE_PATTERN))
-    raid_files.sort(key=lambda f: get_timestamp_from_filename(os.path.basename(f)))
+    file_cache = {}
 
-    processed_files_cache = {} # Cache dla przetworzonych plików
-
-    for filepath in raid_files:
-        if not os.path.exists(filepath): print(f"OSTRZEŻENIE: Pomijanie nieistniejącego pliku: {filepath}"); continue
-        filename = os.path.basename(filepath)
-        processed_data, error = process_single_raid_file(filepath)
-        if error: errors.append(f"{filename}: {error}")
-        if processed_data:
-            all_processed_raids.append(processed_data)
-            processed_files_cache[filename] = processed_data # Zapisz w cache
-
-    all_processed_raids.sort(key=lambda r: r.get('timestamp', datetime.datetime.min))
-
-    for raid_data in all_processed_raids:
-        nickname = raid_data.get('nickname')
+    for raid in all_raids:
+        filename = raid.get('filename')
+        file_cache[filename] = raid
+        nickname = raid.get('nickname')
         if nickname:
             player = players_summary[nickname]
-            player['raid_ids'].append(raid_data['filename']); player['raid_count'] += 1
-            player['latest_level'] = raid_data.get('level'); player['latest_side'] = raid_data.get('side')
-            player['latest_total_experience'] = raid_data.get('total_experience', 0)
-            player['latest_total_experience_formatted'] = format_exp(player['latest_total_experience']) # Formatuj EXP
-            player['latest_timestamp'] = raid_data.get('timestamp', datetime.datetime.min)
-            player['overall_stats_latest'] = raid_data.get('overall_stats', {})
-            player['total_kills'] += raid_data.get('kills_count', 0)
-            victims = raid_data.get('victims', [])
+            player['raid_ids'].append(filename)
+            player['raid_count'] += 1
+            player['latest_level'] = raid.get('level')
+            player['latest_side'] = raid.get('side')
+            player['latest_total_experience'] = raid.get('total_experience', 0)
+            player['latest_total_experience_formatted'] = format_exp(player['latest_total_experience'])
+            player['latest_timestamp'] = datetime.datetime.fromtimestamp(raid.get('timestamp', datetime.datetime.min).timestamp())
+            player['overall_stats_latest'] = raid.get('overall_stats', {})
+            player['total_kills'] += raid.get('kills_count', 0)
+            victims = raid.get('victims', [])
             for victim in victims:
                 if victim.get('BodyPart') == 'Head': player['total_headshots'] += 1
-            raid_result = raid_data.get('raid_result')
+            raid_result = raid.get('raid_result')
             if raid_result == 'Survived': player['total_survived'] += 1
             else: player['total_deaths'] += 1
 
@@ -391,28 +439,25 @@ def load_all_raid_data():
         if data['total_deaths'] > 0: data['calculated_kd'] = f"{data['total_kills'] / data['total_deaths']:.2f}"
         else: data['calculated_kd'] = f"{data['total_kills']}"
 
-    all_processed_raids.sort(key=lambda r: r.get('timestamp', datetime.datetime.min), reverse=True)
-    # Zwracamy też cache, aby endpoint API nie musiał ponownie przetwarzać plików
-    return all_processed_raids, players_summary, errors, processed_files_cache
+    all_raids.sort(key=lambda r: r.get('timestamp', datetime.datetime.min), reverse=True)
+    return {
+        'all_raids': all_raids,
+        'players_summary': players_summary,
+        'errors': errors,
+        'file_cache': file_cache
+    }
 
-# Globalny cache, aby uniknąć wielokrotnego ładowania przy każdym requescie
+# Globalny cache
 RAID_DATA_CACHE = {}
 LAST_CACHE_UPDATE = datetime.datetime.min
-CACHE_TTL = datetime.timedelta(minutes=1) # Jak często odświeżać cache
+CACHE_TTL = datetime.timedelta(minutes=1)
 
 def get_cached_raid_data():
-    """Pobiera dane z cache lub odświeża, jeśli cache jest przestarzały."""
     global RAID_DATA_CACHE, LAST_CACHE_UPDATE
     now = datetime.datetime.now()
     if not RAID_DATA_CACHE or now - LAST_CACHE_UPDATE > CACHE_TTL:
         print("Odświeżanie cache danych rajdów...")
-        all_raids, players, errors, file_cache = load_all_raid_data()
-        RAID_DATA_CACHE = {
-            'all_raids': all_raids,
-            'players_summary': players,
-            'errors': errors,
-            'file_cache': file_cache # Zapisujemy przetworzone pliki w cache
-        }
+        RAID_DATA_CACHE = update_raid_data_cache()
         LAST_CACHE_UPDATE = now
         print("Cache zaktualizowany.")
     return RAID_DATA_CACHE
@@ -425,7 +470,77 @@ def get_map_image_url(location_name):
 def inject_utilities():
     return {'now': datetime.datetime.utcnow, 'get_map_image_url': get_map_image_url, 'get_item_name': get_item_name, 'format_exp': format_exp}
 
-# --- Trasy Aplikacji ---
+# --- Endpointy API dla mod.js ---
+@app.route('/api/mod/connect', methods=['POST'])
+def mod_connect():
+    data = request.get_json()
+    if not data:
+        print("BŁĄD: Brak danych JSON w /api/mod/connect")
+        return jsonify({"error": "Brak danych JSON"}), 400
+    mod_name = data.get("mod", "Unknown")
+    status = data.get("status", "unknown")
+    print(f"Mod connected: {mod_name} (Status: {status})")
+    return jsonify({"status": "success"})
+
+@app.route('/api/raid/start', methods=['POST'])
+def raid_start():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Brak danych JSON"}), 400
+    timestamp_ms = int(datetime.datetime.now().timestamp() * 1000)
+    processed_data, error = process_single_raid_data(data, timestamp_ms, is_start=True)
+    if error:
+        print(f"BŁĄD: {error}")
+        return jsonify({"error": error}), 400
+    cached_data = get_cached_raid_data()
+    cached_data['all_raids'].append(processed_data)
+    cached_data['file_cache'][processed_data['filename']] = processed_data
+    save_raid_data_to_file(cached_data['all_raids'])
+    return jsonify({"status": "success"})
+
+@app.route('/api/raid/end', methods=['POST'])
+def raid_end():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Brak danych JSON"}), 400
+    timestamp_ms = int(datetime.datetime.now().timestamp() * 1000)
+    processed_data, error = process_single_raid_data(data, timestamp_ms, is_start=False)
+    if error:
+        print(f"BŁĄD: {error}")
+        return jsonify({"error": error}), 400
+    cached_data = get_cached_raid_data()
+    cached_data['all_raids'].append(processed_data)
+    cached_data['file_cache'][processed_data['filename']] = processed_data
+    cached_data['players_summary'] = defaultdict(lambda: {
+        'raid_ids': [], 'latest_timestamp': datetime.datetime.min, 'latest_level': None, 'latest_side': None,
+        'latest_total_experience': 0, 'raid_count': 0, 'total_kills': 0, 'total_deaths': 0,
+        'total_survived': 0, 'total_headshots': 0, 'calculated_kd': 'N/A', 'overall_stats_latest': {},
+        'latest_total_experience_formatted': '0'
+    })
+    nickname = processed_data.get('nickname')
+    if nickname:
+        player = cached_data['players_summary'][nickname]
+        player['raid_ids'].append(processed_data['filename'])
+        player['raid_count'] += 1
+        player['latest_level'] = processed_data.get('level')
+        player['latest_side'] = processed_data.get('side')
+        player['latest_total_experience'] = processed_data.get('total_experience', 0)
+        player['latest_total_experience_formatted'] = format_exp(player['latest_total_experience'])
+        player['latest_timestamp'] = processed_data.get('timestamp', datetime.datetime.min)
+        player['overall_stats_latest'] = processed_data.get('overall_stats', {})
+        player['total_kills'] += processed_data.get('kills_count', 0)
+        victims = processed_data.get('victims', [])
+        for victim in victims:
+            if victim.get('BodyPart') == 'Head': player['total_headshots'] += 1
+        raid_result = processed_data.get('raid_result')
+        if raid_result == 'Survived': player['total_survived'] += 1
+        else: player['total_deaths'] += 1
+        if player['total_deaths'] > 0: player['calculated_kd'] = f"{player['total_kills'] / player['total_deaths']:.2f}"
+        else: player['calculated_kd'] = f"{player['total_kills']}"
+    save_raid_data_to_file(cached_data['all_raids'])
+    return jsonify({"status": "success"})
+
+# --- Istniejące Trasy ---
 @app.route('/')
 def index():
     cached_data = get_cached_raid_data()
@@ -437,14 +552,18 @@ def index():
     recent_raids_data = []
     limit = 10
     for raid in all_raids[:limit]:
-        nickname = raid.get('nickname')
+        nickname = raid.get('nickname', 'Unknown')
         player_info = players_summary.get(nickname, {})
         raid_summary = {
-            'filename': raid['filename'], 'timestamp_formatted': raid.get('timestamp_formatted', 'N/A'),
-            'location': raid['location'], 'nickname': nickname, 'level': player_info.get('latest_level', 'N/A'),
-            'side': player_info.get('latest_side', 'N/A'), 'raid_count': player_info.get('raid_count', 0),
+            'filename': raid['filename'],
+            'timestamp_formatted': raid.get('timestamp_formatted', 'N/A'),
+            'location': raid.get('location', 'unknown'),
+            'nickname': nickname,
+            'level': player_info.get('latest_level', 'N/A'),
+            'side': player_info.get('latest_side', 'N/A'),
+            'raid_count': player_info.get('raid_count', 0),
             'exp': raid.get('total_session_exp_calculated', 0),
-            'map_image_filename': get_map_image_url(raid['location'])
+            'map_image_filename': get_map_image_url(raid.get('location', 'unknown'))
         }
         recent_raids_data.append(raid_summary)
     return render_template('index.html', latest_raid=latest_raid, recent_raids=recent_raids_data, errors=errors)
@@ -457,7 +576,8 @@ def players_list():
 
     players_list_data = []
     for nickname, data in players_summary.items():
-        player_data = data.copy(); player_data['nickname'] = nickname
+        player_data = data.copy()
+        player_data['nickname'] = nickname
         player_data['side_translated'] = get_item_name(player_data.get('latest_side', 'Unknown'))
         players_list_data.append(player_data)
     players_list_data.sort(key=lambda p: p['nickname'].lower())
@@ -476,60 +596,40 @@ def player_details(nickname):
     player_raids = [raid for raid in all_raids if raid.get('nickname') == nickname]
     latest_raid = player_raids[0] if player_raids else None
 
-    # Statystyki pozostają takie same
     player_stats = {
-        'sessions': player_info.get('raid_count', 0), 'survived_sessions': player_info.get('total_survived', 0),
-        'deaths': player_info.get('total_deaths', 0), 'kills': player_info.get('total_kills', 0),
+        'sessions': player_info.get('raid_count', 0),
+        'survived_sessions': player_info.get('total_survived', 0),
+        'deaths': player_info.get('total_deaths', 0),
+        'kills': player_info.get('total_kills', 0),
         'survival_rate': player_info.get('overall_stats_latest', {}).get('survival_rate', 'N/A'),
-        'kd_ratio': player_info.get('calculated_kd', 'N/A'), 'headshots': player_info.get('total_headshots', 0),
+        'kd_ratio': player_info.get('calculated_kd', 'N/A'),
+        'headshots': player_info.get('total_headshots', 0),
         'longest_shot': player_info.get('overall_stats_latest', {}).get('longest_shot_formatted', 'N/A'),
     }
 
-    # Umiejętności są pobierane zawsze, szablon zdecyduje czy je pokazać
     skills_changed = latest_raid.get('skills_changed', []) if latest_raid else []
-    achievements = [] # Placeholder
+    achievements = []
 
-    # Zawsze renderuj 'profil.html'
     return render_template('profil.html',
                            nickname=nickname,
-                           player_info=player_info, # Zawiera m.in. latest_side i sformatowane EXP
+                           player_info=player_info,
                            player_stats=player_stats,
                            latest_raid=latest_raid,
                            player_raids=player_raids,
-                           skills=skills_changed, # Przekazywane zawsze
-                           achievements=achievements, # Przekazywane zawsze
+                           skills=skills_changed,
+                           achievements=achievements,
                            errors=errors)
 
-# --- Nowy Endpoint API dla Modala ---
 @app.route('/api/raid/<path:filename>')
 def api_raid_details(filename):
-    # Sprawdzenie bezpieczeństwa ścieżki
-    expected_prefix = os.path.abspath(DEBUG_LOGS_FOLDER)
-    # Normalizuj filename, aby usunąć np. '../'
-    safe_filename = os.path.normpath(filename).lstrip('/')
-    abs_filepath = os.path.abspath(os.path.join(DEBUG_LOGS_FOLDER, safe_filename))
-
-    if not abs_filepath.startswith(expected_prefix):
-         return jsonify(error="Nieprawidłowa ścieżka pliku.", data=None), 404
-
-    # Spróbuj pobrać dane z cache
     cached_data = get_cached_raid_data()
-    processed_data = cached_data['file_cache'].get(safe_filename)
-
+    processed_data = cached_data['file_cache'].get(filename)
     if processed_data:
-         return jsonify(error=None, data=processed_data)
-    else:
-        # Jeśli nie ma w cache (co nie powinno się zdarzyć przy poprawnym działaniu),
-        # można spróbować przetworzyć na żądanie lub zwrócić błąd
-        print(f"OSTRZEŻENIE: Dane dla pliku {safe_filename} nie znalezione w cache API.")
-        # Alternatywnie: przetwórz plik tutaj, ale to mniej wydajne
-        # processed_data, error = process_single_raid_file(abs_filepath)
-        # if processed_data: return jsonify(error=None, data=processed_data)
-        return jsonify(error=f"Nie znaleziono przetworzonych danych dla pliku {safe_filename}.", data=None), 404
-
+        return jsonify(error=None, data=processed_data)
+    return jsonify(error=f"Nie znaleziono danych dla pliku {filename}.", data=None), 404
 
 # Uruchomienie aplikacji
 if __name__ == '__main__':
-    # load_translations() # Już wywołane globalnie
-    get_cached_raid_data() # Wypełnij cache przy starcie
+    load_translations()
+    get_cached_raid_data()
     app.run(debug=True, host='127.0.0.1', port=5000)
