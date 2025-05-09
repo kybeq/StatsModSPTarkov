@@ -47,3 +47,4 @@ coverage/
 # Ignorowanie specyficznych dla projektu folderów (możesz dostosować)
 public/assets/
 src/assets/
+workflow.md
