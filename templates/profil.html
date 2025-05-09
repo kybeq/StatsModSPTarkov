@@ -116,11 +116,12 @@ StatsMods Tarkov{% endblock %} {% block content %} {% if player_info %}
       <h1 class="mb-5">Ostatni rajd</h1>
       {% if latest_raid %}
       <div class="card mb-3 shadow-lg">
-        {% if latest_raid.location %}
+        {% if latest_raid.location %} {# Użyj latest_raid.map_name, jeśli tak
+        przekazujesz z app.py #}
         <img
-          src="{{ url_for('static', filename=get_map_image_url(latest_raid.location)) }}"
+          src="{{ url_for('static', filename=get_map_image_url(latest_raid.map_name)) }}"
           class="img-fluid"
-          alt="{{ latest_raid.location }}"
+          alt="{{ latest_raid.map_name }}"
         />
         {% else %}
         <img
@@ -130,7 +131,7 @@ StatsMods Tarkov{% endblock %} {% block content %} {% if player_info %}
         />
         {% endif %}
         <div class="card-body">
-          <h3 class="card-title">{{ latest_raid.location or 'Nieznana' }}</h3>
+          <h3 class="card-title">{{ latest_raid.map_name or 'Nieznana' }}</h3>
           <p class="card-text">
             <small class="text-body-secondary"
               >Zakończono: {{ latest_raid.timestamp_formatted }}</small
@@ -146,12 +147,12 @@ StatsMods Tarkov{% endblock %} {% block content %} {% if player_info %}
           </li>
           <li class="list-group-item p-3">
             <small>Czas</small>
-            <h3>{{ latest_raid.play_time_formatted }}</h3>
+            <h3>{{ latest_raid.raid_duration_formatted }}</h3>
           </li>
           <ul class="list-group list-group-horizontal">
             <li class="list-group-item col border border-0">
               <small>Zabójstwa w rajdzie</small>
-              <h4>{{ latest_raid.kills_count }}</h4>
+              <h4>{{ latest_raid.kills_total_session }}</h4>
             </li>
             <li class="list-group-item col border border-0">
               <small>Wyjście</small>
@@ -190,11 +191,14 @@ StatsMods Tarkov{% endblock %} {% block content %} {% if player_info %}
             <tr>
               <th scope="row">{{ loop.index }}</th>
               <td>{{ raid.timestamp_formatted }}</td>
-              <td>{{ raid.location or 'N/A' }}</td>
+              <td>{{ raid.map_name or 'N/A' }}</td>
+              {# Zmieniono z raid.location #}
               <td>{{ raid.raid_result or 'N/A' }}</td>
-              <td>{{ raid.play_time_formatted }}</td>
-              <td>{{ raid.kills_count }}</td>
-              <td>{{ format_exp(raid.total_session_exp_calculated) }}</td>
+              <td>{{ raid.raid_duration_formatted }}</td>
+              <td>{{ raid.kills_total_session }}</td>
+              {# Zmieniono z raid.kills_count #}
+              <td>{{ format_exp(raid.experience_gained_session) }}</td>
+              {# Zmieniono na experience_gained_session #}
               <td>
                 <button
                   type="button"
@@ -217,8 +221,6 @@ StatsMods Tarkov{% endblock %} {% block content %} {% if player_info %}
     </div>
   </div>
 
-  {# Sekcje tylko dla BEAR - lub usuń warunek, jeśli dla wszystkich #} {# {% if
-  player_info.latest_side == 'bear' or player_info.latest_side == 'Bear' %} #}
   <hr class="col col-md-12 my-5" />
   <section>
     <div class="row">
@@ -229,7 +231,6 @@ StatsMods Tarkov{% endblock %} {% block content %} {% if player_info %}
     {% if skills and skills|length > 0 %}
     <div class="row g-3">
       <div class="col-md-6">
-        {# Użyj col-md-6 dla lepszego układu na większych ekranach #}
         <h4 class="mb-1 card p-3">Common</h4>
         <ol class="list-group">
           {% for skill in skills if skill.SkillType == 'Common' %}
@@ -348,7 +349,6 @@ StatsMods Tarkov{% endblock %} {% block content %} {% if player_info %}
       {% endif %}
     </div>
   </section>
-  {# {% endif %} #} {# Koniec warunku if player_info.latest_side == 'bear' #}
 </section>
 
 {# Modal "Szczegóły Rajdu" #}
@@ -538,7 +538,7 @@ StatsMods Tarkov{% endblock %} {% block content %} {% if player_info %}
             <div class="col">
               <div class="card">
                 <div class="card-body shadow">
-                  <h6>EXP (TotalSession)</h6>
+                  <h6>EXP (TotalSession z JSON)</h6>
                   <hr />
                   <h3 id="modal-exp-json">0</h3>
                 </div>
@@ -604,7 +604,7 @@ StatsMods Tarkov{% endblock %} {% block content %} {% if player_info %}
             <div class="col">
               <div class="card">
                 <div class="card-body shadow">
-                  <h6>Obraż. Otrzymane</h6>
+                  <h6>Obraż. Otrzymane (Suma)</h6>
                   <hr />
                   <h3 id="modal-dmg-received">0</h3>
                 </div>
@@ -655,8 +655,7 @@ StatsMods Tarkov{% endblock %} {% block content %} {% if player_info %}
             </div>
           </div>
           <hr class="my-5" />
-          <h4 class="mb-3">Umiejętności (zmiany w sesji / wszystkie)</h4>
-          {# Zmieniono tytuł #}
+          <h4 class="mb-3">Umiejętności (wszystkie z profilu po rajdzie)</h4>
           <div id="modal-skills-section">
             <p id="modal-no-skills-changed" class="text-muted d-none">
               Brak danych o umiejętnościach.
@@ -757,7 +756,7 @@ StatsMods Tarkov{% endblock %} {% block content %} {% if player_info %}
       vitalsList: document.getElementById("modal-vitals-list"),
       bodypartsList: document.getElementById("modal-bodyparts-list"),
       skillsSection: document.getElementById("modal-skills-section"),
-      noSkillsChanged: document.getElementById("modal-no-skills-changed"),
+      noSkillsChanged: document.getElementById("modal-no-skills-changed"), // Upewnij się, że to ID istnieje w HTMLu
       foundItems: document.getElementById("modal-found-items"),
       noFoundItems: document.getElementById("modal-no-found-items"),
       transferItems: document.getElementById("modal-transfer-items"),
@@ -771,19 +770,16 @@ StatsMods Tarkov{% endblock %} {% block content %} {% if player_info %}
     function setText(element, value, defaultValue = "N/A") {
       if (element) {
         element.textContent =
-          value !== null && value !== undefined && value !== ""
+          value !== null &&
+          value !== undefined &&
+          value !== "" &&
+          !(typeof value === "number" && isNaN(value))
             ? value
             : defaultValue;
-      } else {
-        // console.warn("setText: Próba ustawienia tekstu na nieistniejącym elemencie.");
       }
     }
     function setHtml(element, htmlContent) {
-      if (element) {
-        element.innerHTML = htmlContent;
-      } else {
-        // console.warn("setHtml: Próba ustawienia HTML na nieistniejącym elemencie.");
-      }
+      if (element) element.innerHTML = htmlContent;
     }
 
     function resetModal() {
@@ -806,7 +802,6 @@ StatsMods Tarkov{% endblock %} {% block content %} {% if player_info %}
         else if (key === "raidResultCard")
           el.className = "card-body shadow-lg shadow";
         else {
-          // Dla H2, H3, SPAN itp.
           setText(el, "N/A");
           if (key === "killsCount") setText(el, "0");
         }
@@ -814,14 +809,12 @@ StatsMods Tarkov{% endblock %} {% block content %} {% if player_info %}
     }
 
     function formatNumberForJS(num) {
-      // Zmieniono nazwę, aby uniknąć konfliktu z Jinja
       if (num === null || num === undefined || num === "") return "0";
       const numValue = Number(num);
       if (isNaN(numValue)) {
-        // Jeśli nie jest liczbą, spróbuj usunąć spacje i ponownie
-        const cleanedNum = String(num).replace(/\s/g, "");
+        const cleanedNum = String(num).replace(/\s/g, "").replace(/,/g, "."); // Obsługa przecinków jako separatorów dziesiętnych
         const cleanedNumValue = Number(cleanedNum);
-        if (isNaN(cleanedNumValue)) return String(num); // Zwróć oryginał, jeśli nadal nie jest liczbą
+        if (isNaN(cleanedNumValue)) return String(num);
         return cleanedNumValue
           .toLocaleString("pl-PL", { useGrouping: true })
           .replace(/,/g, " ");
@@ -864,14 +857,12 @@ StatsMods Tarkov{% endblock %} {% block content %} {% if player_info %}
     }
 
     function createItemListJS(items, listElementId) {
-      // Zmieniono nazwę
       const listElement = document.getElementById(listElementId);
       const noItemsElementId = `no${
         listElementId.substring(5).charAt(0).toUpperCase() +
         listElementId.substring(6)
       }`;
       const noItemsElement = document.getElementById(noItemsElementId);
-
       if (!listElement || !noItemsElement) {
         return;
       }
@@ -971,7 +962,7 @@ StatsMods Tarkov{% endblock %} {% block content %} {% if player_info %}
             const raidResultLower = (raidData.raid_result || "").toLowerCase();
             const survivedName = (
               "{{ get_item_name('Survived') }}" || "Survived"
-            ).toLowerCase();
+            ).toLowerCase(); // Użyj Jinja lub zakoduj
             const killedName = (
               "{{ get_item_name('Killed') }}" || "Killed"
             ).toLowerCase();
@@ -1025,8 +1016,22 @@ StatsMods Tarkov{% endblock %} {% block content %} {% if player_info %}
             elements.expJson,
             formatNumberForJS(raidData.total_session_exp_from_json)
           );
-          setText(elements.expMult, `${raidData.session_exp_mult || 1}x`);
-          setText(elements.expBonus, `${raidData.experience_bonus_mult || 1}x`);
+          setText(
+            elements.expMult,
+            `${
+              raidData.session_exp_mult !== undefined
+                ? raidData.session_exp_mult
+                : 1
+            }x`
+          );
+          setText(
+            elements.expBonus,
+            `${
+              raidData.experience_bonus_mult !== undefined
+                ? raidData.experience_bonus_mult
+                : 1
+            }x`
+          );
           setText(elements.expKill, formatNumberForJS(sessionStats.exp_kill));
           setText(
             elements.expLoot,
@@ -1059,28 +1064,13 @@ StatsMods Tarkov{% endblock %} {% block content %} {% if player_info %}
               Object.keys(dmgReceivedDetailsData).length > 0
             ) {
               let dmgDetailsHtml = "";
-              const orderedParts = [
-                "Głowa",
-                "Klatka piersiowa",
-                "Brzuch",
-                "Lewa ręka",
-                "Prawa ręka",
-                "Lewa noga",
-                "Prawa noga",
-              ];
-              orderedParts.forEach((partName) => {
-                if (dmgReceivedDetailsData[partName] !== undefined) {
+              for (const partName in dmgReceivedDetailsData) {
+                if (dmgReceivedDetailsData.hasOwnProperty(partName)) {
                   dmgDetailsHtml += createDamageCard(
                     partName,
                     dmgReceivedDetailsData[partName]
                   );
                 }
-              });
-              for (const [part, dmg] of Object.entries(
-                dmgReceivedDetailsData
-              )) {
-                if (!orderedParts.includes(part))
-                  dmgDetailsHtml += createDamageCard(part, dmg);
               }
               setHtml(elements.dmgReceivedDetails, dmgDetailsHtml);
               elements.noDmgReceived.classList.add("d-none");
@@ -1152,9 +1142,8 @@ StatsMods Tarkov{% endblock %} {% block content %} {% if player_info %}
             );
           }
 
-          // Umiejętności
           if (elements.skillsSection && elements.noSkillsChanged) {
-            const skills = raidData.skills_changed; // To jest już lista obiektów z API
+            const skills = raidData.skills_changed;
             if (skills && skills.length > 0) {
               let commonSkillsHtml =
                 '<h4 class="mb-1 card p-3">Common</h4><ol class="list-group">';
@@ -1218,11 +1207,11 @@ StatsMods Tarkov{% endblock %} {% block content %} {% if player_info %}
               });
               commonSkillsHtml +=
                 (commonCount === 0
-                  ? '<li class="list-group-item">Brak zmian/danych.</li>'
+                  ? '<li class="list-group-item">Brak danych.</li>'
                   : "") + "</ol>";
               masteringSkillsHtml +=
                 (masteringCount === 0
-                  ? '<li class="list-group-item">Brak zmian/danych.</li>'
+                  ? '<li class="list-group-item">Brak danych.</li>'
                   : "") + "</ol>";
               setHtml(
                 elements.skillsSection,
@@ -1251,6 +1240,14 @@ StatsMods Tarkov{% endblock %} {% block content %} {% if player_info %}
               "d-none"
             ).textContent = `Błąd ładowania danych rajdu: ${error.message}`;
         });
+    });
+
+    // Inicjalizacja tooltipów Bootstrapa, jeśli ich używasz
+    const tooltipTriggerList = [].slice.call(
+      document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    );
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
     });
   });
 </script>

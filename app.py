@@ -78,8 +78,7 @@ def format_distance_meters(meters_val, include_unit=False, is_longest_kill_shot=
     if meters_val is None or str(meters_val).strip() == "": return "N/A" if include_unit else ""
     try: 
         meters = float(meters_val)
-        if is_longest_kill_shot: 
-            meters /= 10.0
+        if is_longest_kill_shot: meters /= 10.0 
     except: return "N/A" if include_unit else ""
     unit = " m" if include_unit else ""
     return f"{meters:.1f}{unit}"
@@ -126,14 +125,14 @@ def save_raid_json_data(data, player_nickname_raw, session_id_raw, event_type):
 def parse_raid_end_json_for_summary(filepath_full, filepath_relative_to_root):
     try:
         with open(filepath_full, 'r', encoding='utf-8') as f: data = json.load(f)
-    except Exception as e: print(f"Błąd odczytu JSON {filepath_full}: {e}"); return None
+    except Exception as e: print(f"Błąd odczytu JSON (summary) {filepath_full}: {e}"); return None
     summary = {}
     try:
-        request_data = data.get('request', {}); results = request_data.get('results', {})
-        profile_node = results.get('profile', {}); profile_info = profile_node.get('Info', {}) # Użyj profile_node
-        stats_eft = profile_node.get('Stats', {}).get('Eft', {})
-        session_counters = stats_eft.get('SessionCounters', {}).get('Items', [])
-        victims = stats_eft.get('Victims', [])
+        request_data = data.get('request', {}); results_node = request_data.get('results', {})
+        profile_node = results_node.get('profile', {}); profile_info_node = profile_node.get('Info', {})
+        stats_eft_node = profile_node.get('Stats', {}).get('Eft', {})
+        session_counters_items = stats_eft_node.get('SessionCounters', {}).get('Items', [])
+        victims_list = stats_eft_node.get('Victims', [])
 
         summary['session_id'] = data.get('sessionId', profile_node.get('_id', 'N/A'))
         try:
@@ -144,26 +143,26 @@ def parse_raid_end_json_for_summary(filepath_full, filepath_relative_to_root):
             else: summary['timestamp_utc'] = datetime.datetime.fromtimestamp(os.path.getmtime(filepath_full), tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
         except: summary['timestamp_utc'] = datetime.datetime.fromtimestamp(os.path.getmtime(filepath_full), tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
         
-        summary['player_nickname'] = profile_info.get('Nickname', 'N/A')
-        summary['player_level'] = profile_info.get('Level', '0')
-        summary['player_side'] = get_item_name(profile_info.get('Side', ''))
-        summary['map_name'] = get_item_name(profile_info.get('EntryPoint', ''))
-        raw_raid_result = results.get('result', 'Unknown')
+        summary['player_nickname'] = profile_info_node.get('Nickname', 'N/A')
+        summary['player_level'] = profile_info_node.get('Level', '0')
+        summary['player_side'] = get_item_name(profile_info_node.get('Side', ''))
+        summary['map_name'] = get_item_name(profile_info_node.get('EntryPoint', ''))
+        raw_raid_result = results_node.get('result', 'Unknown')
         summary['raid_result'] = get_item_name(raw_raid_result)
-        summary['raid_duration_formatted'] = format_time_seconds(results.get('playTime', stats_eft.get('TotalInGameTime')))
+        summary['raid_duration_formatted'] = format_time_seconds(results_node.get('playTime', stats_eft_node.get('TotalInGameTime')))
         raid_res_lower = raw_raid_result.lower()
         survived_key = get_item_name('Survived', False).lower()
         if raid_res_lower == survived_key or (survived_key == "" and raid_res_lower == 'survived'):
-            summary['exit_name'] = get_item_name(results.get('exitName', ''))
+            summary['exit_name'] = get_item_name(results_node.get('exitName', ''))
         else: summary['exit_name'] = ''
-        summary['kills_total_session'] = len(victims) if isinstance(victims, list) else 0
-        summary['kills_headshots_session'] = sum(1 for v in victims if isinstance(v,dict) and v.get('BodyPart','').lower() == 'head') if isinstance(victims, list) else 0
-        exp_kill = get_counter_value_from_json_list(session_counters, ["ExpKill"], 0)
-        exp_loot = get_counter_value_from_json_list(session_counters, ["ExpLooting"], 0)
-        exp_exit = get_counter_value_from_json_list(session_counters, ["Exp", "ExpExitStatus"], 0)
+        summary['kills_total_session'] = len(victims_list) if isinstance(victims_list, list) else 0
+        summary['kills_headshots_session'] = sum(1 for v in victims_list if isinstance(v,dict) and v.get('BodyPart','').lower() == 'head') if isinstance(victims_list, list) else 0
+        exp_kill = get_counter_value_from_json_list(session_counters_items, ["ExpKill"], 0)
+        exp_loot = get_counter_value_from_json_list(session_counters_items, ["ExpLooting"], 0)
+        exp_exit = get_counter_value_from_json_list(session_counters_items, ["Exp", "ExpExitStatus"], 0)
         summary['experience_gained_session'] = exp_kill + exp_loot + exp_exit
-        lks_val = get_counter_value_from_json_list(session_counters, ["LongestKillShot"], None)
-        summary['longest_shot_session_val'] = (float(lks_val) / 10.0) if lks_val is not None else 0.0
+        lks_val = get_counter_value_from_json_list(session_counters_items, ["LongestKillShot"], None)
+        summary['longest_shot_session_deci_meters'] = lks_val if lks_val is not None else 0 
         summary['json_file_path_relative'] = filepath_relative_to_root 
         return summary
     except Exception as e:
@@ -181,7 +180,8 @@ def get_or_refresh_data_cache():
     players_summary_intermediate = defaultdict(lambda: {
         'nickname': '', 'latest_level': '0', 'latest_side': '', 'latest_game_edition': '',
         'raid_count': 0, 'total_kills': 0, 'total_deaths': 0, 'total_survived': 0,
-        'total_headshots': 0, 'total_gained_exp_from_raids': 0, 'longest_shot_ever': 0.0 
+        'total_headshots': 0, 'total_gained_exp_from_raids': 0, 
+        'longest_shot_ever_deci_meters': 0.0 
     })
     current_errors = []
     ensure_dir_exists(JSON_RAID_DATA_ROOT_DIR)
@@ -210,9 +210,9 @@ def get_or_refresh_data_cache():
                             player['total_kills'] += int(raid_summary.get('kills_total_session', 0) or 0)
                             player['total_headshots'] += int(raid_summary.get('kills_headshots_session', 0) or 0)
                             player['total_gained_exp_from_raids'] += int(raid_summary.get('experience_gained_session', 0) or 0)
-                            current_raid_lks = raid_summary.get('longest_shot_session_val', 0.0)
-                            if current_raid_lks > player['longest_shot_ever']:
-                                player['longest_shot_ever'] = current_raid_lks
+                            current_raid_lks_deci = raid_summary.get('longest_shot_session_deci_meters', 0.0)
+                            if current_raid_lks_deci > player['longest_shot_ever_deci_meters']:
+                                player['longest_shot_ever_deci_meters'] = current_raid_lks_deci
                             raid_res_lower = raid_summary.get('raid_result', '').lower()
                             survived_key = get_item_name('Survived').lower() 
                             killed_key = get_item_name('Killed').lower()
@@ -227,7 +227,7 @@ def get_or_refresh_data_cache():
         data_copy['survival_rate'] = f"{(data_copy['total_survived'] / data_copy['raid_count'] * 100):.1f}%" if data_copy['raid_count'] > 0 else "0.0%"
         data_copy['latest_total_experience_formatted'] = format_exp(data_copy['total_gained_exp_from_raids'])
         data_copy['side_translated'] = get_item_name(data_copy['latest_side'])
-        data_copy['longest_shot_ever_formatted'] = format_distance_meters(data_copy['longest_shot_ever'], include_unit=True, is_longest_kill_shot=False) if data_copy['longest_shot_ever'] > 0 else "N/A" # is_longest_kill_shot=False bo to już metry
+        data_copy['longest_shot_ever_formatted'] = format_distance_meters(data_copy['longest_shot_ever_deci_meters'], include_unit=True, is_longest_kill_shot=True) if data_copy['longest_shot_ever_deci_meters'] > 0 else "N/A"
         final_players_summary[nickname] = data_copy
 
     all_raids_summary_list.sort(key=lambda r: r.get('timestamp_utc', '0'), reverse=True) 
@@ -310,32 +310,33 @@ def player_details(nickname):
             if os.path.exists(full_path):
                 with open(full_path, 'r', encoding='utf-8') as f_raid:
                     raid_detail_data_payload = json.load(f_raid)
-                    raid_detail_request = raid_detail_data_payload.get('request', {})
-                    profile_data = raid_detail_request.get('results',{}).get('profile',{}) # Zmieniono na profile_data
-                    
-                    profile_skills = profile_data.get('Skills',{}) # Użyj profile_data
+                    profile_data = raid_detail_data_payload.get('request',{}).get('results',{}).get('profile',{})
+                    profile_skills = profile_data.get('Skills',{})
                     if isinstance(profile_skills.get('Common'), list):
                         for skill in profile_skills['Common']:
-                            if isinstance(skill, dict) and float(skill.get('PointsEarnedDuringSession', 0) or 0) > 0:
-                                skills_for_template.append({'SkillName': get_item_name(skill.get('Id')), 'Progress': f"{float(skill.get('Progress',0) or 0):.2f}", 
-                                                            'PointsEarnedFormatted': f"{float(skill.get('PointsEarnedDuringSession',0) or 0):.2f}", 'SkillType': 'Common'})
+                            if isinstance(skill, dict): # Pokaż wszystkie Common
+                                skills_for_template.append({'SkillName': get_item_name(skill.get('Id')), 
+                                                            'Progress': f"{float(skill.get('Progress',0) or 0):.2f}", 
+                                                            'PointsEarnedFormatted': f"{float(skill.get('PointsEarnedDuringSession',0) or 0):.2f}", 
+                                                            'SkillType': 'Common'})
                     if isinstance(profile_skills.get('Mastering'), list):
                         for skill in profile_skills['Mastering']:
-                            if isinstance(skill, dict) and float(skill.get('Progress', 0) or 0) > 0 :
-                                skills_for_template.append({'SkillName': get_item_name(skill.get('Id')), 'Progress': f"{float(skill.get('Progress',0) or 0):.2f}", 
-                                                            'PointsEarnedFormatted': 'N/A', 'SkillType': 'Mastering'})
-
-                    profile_achievements = profile_data.get('Achievements',{}) # Użyj profile_data
+                            if isinstance(skill, dict): # Pokaż wszystkie Mastering
+                                skills_for_template.append({'SkillName': get_item_name(skill.get('Id')), 
+                                                            'Progress': f"{float(skill.get('Progress',0) or 0):.2f}", 
+                                                            'PointsEarnedFormatted': 'N/A', 
+                                                            'SkillType': 'Mastering'})
+                    profile_achievements = profile_data.get('Achievements',{})
                     if isinstance(profile_achievements, dict):
                         for ach_id, timestamp in profile_achievements.items():
                             ach_ts_str = 'N/A'
                             if isinstance(timestamp, (int, float)) and timestamp > 0:
                                 try: ach_ts_str = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M')
                                 except: pass
-                            achievements_for_template.append({'id': get_item_name(ach_id).lower().replace(" ","_").replace("(","").replace(")","").replace(":",""), 
-                                                              'name': get_item_name(ach_id), 'timestamp': ach_ts_str})
-            else: print(f"Plik JSON dla umiejętności/osiągnięć nie znaleziony: {full_path}")
-        except Exception as e: print(f"Błąd wczytywania szczegółów JSON dla profilu: {e}")
+                            ach_id_clean = get_item_name(ach_id).lower().replace(" ","_").replace("(","").replace(")","").replace(":","").replace("'","")
+                            achievements_for_template.append({'id': ach_id_clean, 'name': get_item_name(ach_id), 'timestamp': ach_ts_str})
+            else: print(f"Plik JSON dla profilu (umiejętności/osiągnięcia) nie znaleziony: {full_path}")
+        except Exception as e: print(f"Błąd wczytywania JSON dla profilu: {e}")
 
     return render_template('profil.html', 
                            nickname=nickname, player_info=player_info_summary, 
@@ -360,14 +361,19 @@ def api_raid_json_details():
         with open(full_filepath, 'r', encoding='utf-8') as f: raid_full_data_payload = json.load(f)
         
         modal_response_data = {}
-        request_node = raid_full_data_payload.get('request', {})
-        results_node = request_node.get('results', {})
-        # POPRAWKA: profile_node zamiast profile
-        profile_node = results_node.get('profile', {}) 
+        request_node = raid_full_data_payload.get('request', {}) # Główny węzeł z danymi rajdu
         
-        if not profile_node: # Sprawdzenie czy profile_node istnieje
-             print(f"BŁĄD API: Brak 'profile' w {filepath_relative_cleaned}")
-             return jsonify(error="Brak kluczowych danych 'profile' w pliku JSON rajdu.", data=None), 500
+        # Jeśli 'request' nie zawiera 'results', to może cały payload jest tym, czego szukamy
+        # (na wypadek gdyby struktura JSONa była inna niż zakładamy)
+        results_node = request_node.get('results')
+        if not results_node: # Fallback, jeśli 'results' jest na najwyższym poziomie payloadu
+            results_node = raid_full_data_payload.get('results',{}) 
+            if not results_node: # Jeśli nadal nie ma, użyj całego request_node jako results_node
+                results_node = request_node 
+
+
+        profile_node = results_node.get('profile', {}) 
+        if not profile_node: return jsonify(error="Brak kluczowych danych 'profile' w pliku JSON rajdu.", data=None), 500
 
         profile_info_node = profile_node.get('Info', {})
         stats_eft_node = profile_node.get('Stats', {}).get('Eft', {})
@@ -426,8 +432,7 @@ def api_raid_json_details():
             'damage_dealt': get_counter_value_from_json_list(session_counters_modal, ["CombatDamage"], 0),
             'distance_formatted': format_distance_meters(get_counter_value_from_json_list(session_counters_modal, ["Pedometer"], 0), include_unit=True, is_longest_kill_shot=False),
             'deaths': get_counter_value_from_json_list(session_counters_modal, ["Deaths"], 0),
-            'blood_loss': get_counter_value_from_json_list(session_counters_modal, ["BloodLoss"], 0),
-            'damage_received_total': 'N/A' 
+            'blood_loss': get_counter_value_from_json_list(session_counters_modal, ["BloodLoss"], 0)
         }
         modal_response_data['total_session_exp_calculated'] = modal_response_data['session_stats']['exp_kill'] + modal_response_data['session_stats']['exp_looting'] + modal_response_data['session_stats']['exp_exit_status']
         modal_response_data['total_session_exp_from_json'] = stats_eft_node.get('TotalSessionExperience', 0)
@@ -461,9 +466,6 @@ def api_raid_json_details():
         modal_response_data['skills_changed'] = skills_for_modal
 
         found_in_raid_items_modal = []
-        # Poprawka dla FoundInRaidItems - iterujemy po Stats.Eft.FoundInRaidItems (lista obiektów {ItemId, count})
-        # a nazwy bierzemy z Inventory na podstawie _tpl (ItemId)
-        # To jest złożone, uproszczona wersja poniżej:
         if isinstance(stats_eft_node.get('FoundInRaidItems'), list):
             for fir_item_stat in stats_eft_node.get('FoundInRaidItems'):
                 if isinstance(fir_item_stat, dict):
@@ -471,7 +473,7 @@ def api_raid_json_details():
         modal_response_data['found_in_raid_items'] = found_in_raid_items_modal
         
         modal_response_data['transfer_items'] = [] 
-        if isinstance(results_node.get('transferItems'), list): # Z results_node
+        if isinstance(results_node.get('transferItems'), list):
             for item in results_node.get('transferItems'):
                 if isinstance(item,dict): modal_response_data['transfer_items'].append({'name':get_item_name(item.get('_tpl')), 'count':item.get('upd',{}).get('StackObjectsCount',1)})
 
@@ -496,7 +498,8 @@ def api_raid_json_details():
 @app.route('/api/mod/connect', methods=['POST'])
 def mod_connect(): 
     data = request.get_json(); 
-    save_raid_json_data(data, "SYSTEM", data.get("mod","mod_unknown"), "connect_event")
+    mod_name_for_file = data.get("mod", "unknown_mod").replace(" ", "_")
+    save_raid_json_data(data, "SYSTEM", mod_name_for_file, "connect_event")
     return jsonify({"status": "success"})
 
 @app.route('/api/raid/start', methods=['POST'])
@@ -504,14 +507,18 @@ def raid_start():
     data = request.get_json();
     if not data: return jsonify({"error": "Brak danych JSON"}), 400
     session_id = data.get('sessionId', 'unknownS')
-    player_nickname = data.get('request',{}).get('playerProfile',{}).get('Info',{}).get('Nickname', session_id)
+    player_nickname = "UnknownPlayer"
+    try: player_nickname = data['request']['playerProfile']['Info'].get('Nickname', session_id)
+    except (KeyError, TypeError): player_nickname = session_id
     
     json_path_relative = save_raid_json_data(data, player_nickname, session_id, "start")
     
     if session_id != 'unknownS' and json_path_relative:
         start_info = {"timestamp_utc_start": datetime.datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S'), 
                       "json_file_start_path_relative": json_path_relative, 
-                      "player_level_start": data.get('request',{}).get('playerProfile',{}).get('Info',{}).get('Level')}
+                      "player_level_start": "N/A"}
+        try: start_info["player_level_start"] = data['request']['playerProfile']['Info'].get('Level')
+        except (KeyError, TypeError): pass
         ACTIVE_RAIDS_INFO[session_id] = start_info
     return jsonify({"status": "success"})
 
@@ -527,7 +534,7 @@ def raid_end():
     except (AttributeError, KeyError, TypeError): 
         session_id = session_id or f"no_sid_end_{datetime.datetime.now().strftime('%f')}"
         player_nickname = session_id if player_nickname == "UnknownPlayer" else player_nickname
-
+    
     save_raid_json_data(data, player_nickname, session_id, "end")
     
     global RAID_DATA_CACHE
