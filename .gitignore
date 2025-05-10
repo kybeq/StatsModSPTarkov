@@ -1,6 +1,7 @@
 # Ignorowanie folderów z zależnościami
 node_modules/
 bower_components/
+__pycache__/
 
 # Ignorowanie plików generowanych przez build
 dist/
