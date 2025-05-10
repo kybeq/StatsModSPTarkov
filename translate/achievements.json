@@ -1,7 +1,7 @@
 [
   {
     "id": "660fe21454670811e304c045",
-    "imageUrl": "/files/achievement/Maslenitsa2024.png",
+    "imageUrl": "/achievement/Maslenitsa2024.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -69,7 +69,7 @@
   },
   {
     "id": "6513efa1b49e3253755f47eb",
-    "imageUrl": "/files/achievement/Standard_10.png",
+    "imageUrl": "/achievement/Standard_10.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -137,7 +137,7 @@
   },
   {
     "id": "65141dd6303df252af1c72c9",
-    "imageUrl": "/files/achievement/Rare_29.png",
+    "imageUrl": "/achievement/Rare_29.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -185,7 +185,7 @@
   },
   {
     "id": "6513ed89cf2f1c285e606068",
-    "imageUrl": "/files/achievement/Standard_7.png",
+    "imageUrl": "/achievement/Standard_7.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -253,7 +253,7 @@
   },
   {
     "id": "651415feb49e3253755f4b68",
-    "imageUrl": "/files/achievement/Rare_15.png",
+    "imageUrl": "/achievement/Rare_15.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -885,7 +885,7 @@
   },
   {
     "id": "651419eea3dd9b6aa7159ee5",
-    "imageUrl": "/files/achievement/Rare_21.png",
+    "imageUrl": "/achievement/Rare_21.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -976,7 +976,7 @@
   },
   {
     "id": "6527d3aac656a951ad1528ce",
-    "imageUrl": "/files/achievement/Rare22.png",
+    "imageUrl": "/achievement/Rare22.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -1044,7 +1044,7 @@
   },
   {
     "id": "6514321bec10ff011f17ccac",
-    "imageUrl": "/files/achievement/Legendary_42.png",
+    "imageUrl": "/achievement/Legendary_42.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -1093,7 +1093,7 @@
   },
   {
     "id": "6513eec00dc723592b0f90cc",
-    "imageUrl": "/files/achievement/Standard_9.png",
+    "imageUrl": "/achievement/Standard_9.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -1161,7 +1161,7 @@
   },
   {
     "id": "651412b8c31fcb0e163577c5",
-    "imageUrl": "/files/achievement/Rare_11.png",
+    "imageUrl": "/achievement/Rare_11.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -1229,7 +1229,7 @@
   },
   {
     "id": "651411f1cf2f1c285e606423",
-    "imageUrl": "/files/achievement/Rare_10.png",
+    "imageUrl": "/achievement/Rare_10.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -1297,7 +1297,7 @@
   },
   {
     "id": "65140ab8ec10ff011f17cc10",
-    "imageUrl": "/files/achievement/Rare_5.png",
+    "imageUrl": "/achievement/Rare_5.png",
     "assetPath": "",
     "rewards": [
       {
@@ -1376,7 +1376,7 @@
   },
   {
     "id": "66742c003a67b164a300fcbf",
-    "imageUrl": "/files/achievement/KeySalvation.png",
+    "imageUrl": "/achievement/KeySalvation.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -1444,7 +1444,7 @@
   },
   {
     "id": "6513f0a10dc723592b0f90cf",
-    "imageUrl": "/files/achievement/Standard_11.png",
+    "imageUrl": "/achievement/Standard_11.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -1512,7 +1512,7 @@
   },
   {
     "id": "65141a3059647d2cb3213c9e",
-    "imageUrl": "/files/achievement/Standard_22.png",
+    "imageUrl": "/achievement/Standard_22.png",
     "assetPath": "",
     "rewards": [
       {
@@ -1616,7 +1616,7 @@
   },
   {
     "id": "66c328de9dc78468f4040f35",
-    "imageUrl": "/files/achievement/Standard73.png",
+    "imageUrl": "/achievement/Standard73.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -1684,7 +1684,7 @@
   },
   {
     "id": "655b4a576689c676ce57acb6",
-    "imageUrl": "/files/achievement/Rare_44.png",
+    "imageUrl": "/achievement/Rare_44.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -1752,7 +1752,7 @@
   },
   {
     "id": "668bf47c781d446fdc083711",
-    "imageUrl": "/files/achievement/ArmsRaceEvent2024.png",
+    "imageUrl": "/achievement/ArmsRaceEvent2024.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -1820,7 +1820,7 @@
   },
   {
     "id": "664f23e44702fd5db50ee732",
-    "imageUrl": "/files/achievement/Rare_35.png",
+    "imageUrl": "/achievement/Rare_35.png",
     "assetPath": "",
     "rewards": [
       {
@@ -1899,7 +1899,7 @@
   },
   {
     "id": "6527d2e2c656a951ad1528c3",
-    "imageUrl": "/files/achievement/Rare23.png",
+    "imageUrl": "/achievement/Rare23.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -1967,7 +1967,7 @@
   },
   {
     "id": "65141b9859647d2cb3213ca2",
-    "imageUrl": "/files/achievement/Standard_24.png",
+    "imageUrl": "/achievement/Standard_24.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -2035,7 +2035,7 @@
   },
   {
     "id": "6513f1feec10ff011f17c7ea",
-    "imageUrl": "/files/achievement/Standard_12.png",
+    "imageUrl": "/achievement/Standard_12.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -2197,7 +2197,7 @@
   },
   {
     "id": "670feb95a4e71050310cc14b",
-    "imageUrl": "/files/achievement/S24Q4_Halloween2.png",
+    "imageUrl": "/achievement/S24Q4_Halloween2.png",
     "assetPath": "",
     "rewards": [
       {
@@ -2374,7 +2374,7 @@
   },
   {
     "id": "65140b55cf2f1c285e606414",
-    "imageUrl": "/files/achievement/Rare_6.png",
+    "imageUrl": "/achievement/Rare_6.png",
     "assetPath": "",
     "rewards": [
       {
@@ -2453,7 +2453,7 @@
   },
   {
     "id": "6512ea46f7a078264a4376e4",
-    "imageUrl": "/files/achievement/Standard_2.png",
+    "imageUrl": "/achievement/Standard_2.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -2513,7 +2513,7 @@
   },
   {
     "id": "6514134eec10ff011f17cc26",
-    "imageUrl": "/files/achievement/Rare21.png",
+    "imageUrl": "/achievement/Rare21.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -2581,7 +2581,7 @@
   },
   {
     "id": "65140bbec31fcb0e163577b9",
-    "imageUrl": "/files/achievement/Rare_7.png",
+    "imageUrl": "/achievement/Rare_7.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -2649,7 +2649,7 @@
   },
   {
     "id": "66c328aca91e7d66fa1b0b7b",
-    "imageUrl": "/files/achievement/Standard75.png",
+    "imageUrl": "/achievement/Standard75.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -2720,7 +2720,7 @@
   },
   {
     "id": "66b493bc2d8cd3b5e90a3648",
-    "imageUrl": "/files/achievement/Legendary77.png",
+    "imageUrl": "/achievement/Legendary77.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -3072,7 +3072,7 @@
   },
   {
     "id": "6513ee11a3dd9b6aa7159b4a",
-    "imageUrl": "/files/achievement/Standard_8.png",
+    "imageUrl": "/achievement/Standard_8.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -3140,7 +3140,7 @@
   },
   {
     "id": "6514143d59647d2cb3213c93",
-    "imageUrl": "/files/achievement/Legendary_14.png",
+    "imageUrl": "/achievement/Legendary_14.png",
     "assetPath": "",
     "rewards": [
       {
@@ -3219,7 +3219,7 @@
   },
   {
     "id": "6512eb3ddfb0ae1ee75a0376",
-    "imageUrl": "/files/achievement/Standard_3.png",
+    "imageUrl": "/achievement/Standard_3.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -3570,7 +3570,7 @@
   },
   {
     "id": "65141cd2cf2f1c285e606449",
-    "imageUrl": "/files/achievement/Rare_28.png",
+    "imageUrl": "/achievement/Rare_28.png",
     "assetPath": "",
     "rewards": [
       {
@@ -3657,7 +3657,7 @@
   },
   {
     "id": "6529097eccf6aa5f8737b3d0",
-    "imageUrl": "/files/achievement/Legendary_19.png",
+    "imageUrl": "/achievement/Legendary_19.png",
     "assetPath": "",
     "rewards": [
       {
@@ -4328,7 +4328,7 @@
   },
   {
     "id": "65141bdfcf2f1c285e606446",
-    "imageUrl": "/files/achievement/Standard_25.png",
+    "imageUrl": "/achievement/Standard_25.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -4396,7 +4396,7 @@
   },
   {
     "id": "670febed5ee0fc738a0965a4",
-    "imageUrl": "/files/achievement/S24Q4_Halloween1.png",
+    "imageUrl": "/achievement/S24Q4_Halloween1.png",
     "assetPath": "",
     "rewards": [
       {
@@ -4567,7 +4567,7 @@
   },
   {
     "id": "6513eb6e0dc723592b0f9095",
-    "imageUrl": "/files/achievement/Standard_6.png",
+    "imageUrl": "/achievement/Standard_6.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -4635,7 +4635,7 @@
   },
   {
     "id": "65140c00b1c08b0feb216d50",
-    "imageUrl": "/files/achievement/Rare_8.png",
+    "imageUrl": "/achievement/Rare_8.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -4703,7 +4703,7 @@
   },
   {
     "id": "66e2a7e5919bad697104f4b3",
-    "imageUrl": "/files/achievement/ArtShelling_Event.png",
+    "imageUrl": "/achievement/ArtShelling_Event.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -4771,7 +4771,7 @@
   },
   {
     "id": "675709bef4e2a2ce0f058f56",
-    "imageUrl": "/files/achievement/Rare_78.png",
+    "imageUrl": "/achievement/Rare_78.png",
     "assetPath": "",
     "rewards": [
       {
@@ -4850,7 +4850,7 @@
   },
   {
     "id": "6512f1e3be73cc7f07358ed5",
-    "imageUrl": "/files/achievement/Standard_5.png",
+    "imageUrl": "/achievement/Standard_5.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -4918,7 +4918,7 @@
   },
   {
     "id": "65141032a3dd9b6aa7159ed3",
-    "imageUrl": "/files/achievement/Rare_9.png",
+    "imageUrl": "/achievement/Rare_9.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -4986,7 +4986,7 @@
   },
   {
     "id": "66c32996b4c0c017a3319cc3",
-    "imageUrl": "/files/achievement/Rare73.png",
+    "imageUrl": "/achievement/Rare73.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -5054,7 +5054,7 @@
   },
   {
     "id": "655b49bc91aa9e07687ae47c",
-    "imageUrl": "/files/achievement/Standard_44.png",
+    "imageUrl": "/achievement/Standard_44.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -5122,7 +5122,7 @@
   },
   {
     "id": "664f1f8768508d74604bf556",
-    "imageUrl": "/files/achievement/Legendary_52.png",
+    "imageUrl": "/achievement/Legendary_52.png",
     "assetPath": "",
     "rewards": [],
     "conditions": {
@@ -5190,7 +5190,7 @@
   },
   {
     "id": "675998a894008342eb04e47f",
-    "imageUrl": "/files/achievement/S24Q4_Roundelay.png",
+    "imageUrl": "/achievement/S24Q4_Roundelay.png",
     "assetPath": "",
     "rewards": [
       {
